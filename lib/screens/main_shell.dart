@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 import 'home_screen.dart';
 import 'chat_screen.dart';
 import 'profile_screen.dart';
@@ -16,33 +17,40 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int currentIndex = 0;
 
-  final List<Widget> tabs = const [
-    HomeScreen(),
-    ChatScreen(),
-    ProfileScreen(),
+  void goToTab(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+  }
+
+  late final List<Widget> tabs = [
+    HomeScreen(onOpenAIAssistant: () => goToTab(1)),
+    const ChatScreen(),
+    const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: currentIndex, children: tabs),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textMuted,
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline_rounded), label: 'AI Assistant'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), label: 'Profile'),
-        ],
-      ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
+          body: IndexedStack(index: currentIndex, children: tabs),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: currentIndex,
+            onTap: goToTab,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: AppColors.textMuted,
+            backgroundColor: Colors.white,
+            type: BottomNavigationBarType.fixed,
+            items: [
+              BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), label: AppText.of(context, 'home')),
+              BottomNavigationBarItem(icon: const Icon(Icons.chat_bubble_outline_rounded), label: AppText.of(context, 'ai_assistant')),
+              BottomNavigationBarItem(icon: const Icon(Icons.person_outline_rounded), label: AppText.of(context, 'profile')),
+            ],
+          ),
+        );
+      },
     );
   }
 }

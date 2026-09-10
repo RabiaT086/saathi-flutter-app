@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
+import '../data_store.dart';
 import 'case_details_screen.dart';
 
 class MyCasesScreen extends StatefulWidget {
@@ -10,26 +12,20 @@ class MyCasesScreen extends StatefulWidget {
 }
 
 class _MyCasesScreenState extends State<MyCasesScreen> {
-  String selectedFilter = 'Investigation';
-  final List<String> filters = ['Submitted', 'Under Review', 'Investigation', 'Resolved', 'Closed'];
-
-  final List<Map<String, String>> cases = const [
-    {
-      'id': '#HA-2026-001',
-      'type': 'Cyber Harassment',
-      'date': '2026-08-02 21:40',
-      'description': 'An unknown account has been repeatedly sending unwanted messages and comments after I asked them to stop. They...',
-      'priority': 'HIGH',
-      'status': 'Investigation',
-      'location': 'Online · Instagram DMs',
-    },
-  ];
+  String selectedFilter = 'All';
+  final List<String> filters = ['All', 'Submitted', 'Under Review', 'Investigation', 'Resolved', 'Closed'];
 
   @override
   Widget build(BuildContext context) {
-    final filtered = cases.where((c) => c['status'] == selectedFilter).toList();
+    return ValueListenableBuilder<List<Map<String, String>>>(
+      valueListenable: DataStore.cases,
+      builder: (context, cases, __) {
+        final filtered = selectedFilter == 'All' ? cases : cases.where((c) => c['status'] == selectedFilter).toList();
 
-    return Scaffold(
+        return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
@@ -57,8 +53,8 @@ class _MyCasesScreenState extends State<MyCasesScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('My cases', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text('${cases.length} complaints filed', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text(AppText.of(context, 'my_cases'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text('${cases.length} ${AppText.of(context, 'complaints_filed')}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -171,6 +167,10 @@ class _MyCasesScreenState extends State<MyCasesScreen> {
           ],
         ),
       ),
+        );
+      },
+    );
+      },
     );
   }
 }

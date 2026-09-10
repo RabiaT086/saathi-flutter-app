@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -81,32 +82,35 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('Create account', style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold)),
+        title: Text(AppText.of(context, 'join_saathi'), style: const TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Your details stay private and are visible only to authorised university personnel.',
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            Text(
+              AppText.of(context, 'signup_subtitle'),
+              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 25),
 
-            _label('Full name'),
+            _label(AppText.of(context, 'full_name')),
             TextField(
               controller: nameController,
               decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
             const SizedBox(height: 18),
 
-            _label('University email'),
+            _label(AppText.of(context, 'university_email')),
             TextField(
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
@@ -114,7 +118,7 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
             const SizedBox(height: 18),
 
-            _label('Password'),
+            _label(AppText.of(context, 'password')),
             TextField(
               controller: passwordController,
               obscureText: obscurePassword,
@@ -127,13 +131,13 @@ class _SignupScreenState extends State<SignupScreen> {
                       obscurePassword = !obscurePassword;
                     });
                   },
-                  icon: Icon(obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                  icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                 ),
               ),
             ),
             const SizedBox(height: 18),
 
-            _label('Confirm password'),
+            _label(AppText.of(context, 'confirm_password')),
             TextField(
               controller: confirmPasswordController,
               obscureText: obscureConfirmPassword,
@@ -146,7 +150,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       obscureConfirmPassword = !obscureConfirmPassword;
                     });
                   },
-                  icon: Icon(obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                  icon: Icon(obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                 ),
               ),
             ),
@@ -184,7 +188,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                child: const Text('Create Account', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                child: Text(AppText.of(context, 'create_account'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
               ),
             ),
             const SizedBox(height: 20),
@@ -194,13 +198,13 @@ class _SignupScreenState extends State<SignupScreen> {
                   Navigator.pop(context);
                 },
                 child: RichText(
-                  text: const TextSpan(
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                  text: TextSpan(
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
                     children: [
-                      TextSpan(text: 'Already registered? '),
+                      TextSpan(text: AppText.of(context, 'already_registered')),
                       TextSpan(
-                        text: 'Login',
-                        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                        text: AppText.of(context, 'login'),
+                        style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -210,6 +214,8 @@ class _SignupScreenState extends State<SignupScreen> {
           ],
         ),
       ),
+        );
+      },
     );
   }
 }

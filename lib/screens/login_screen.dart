@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 import 'forgot_password_screen.dart';
 import 'signup_screen.dart';
 import 'main_shell.dart';
@@ -51,7 +52,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -70,8 +74,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: const Icon(Icons.verified_user_outlined, color: Colors.white, size: 30),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Welcome back',
+              Text(
+                AppText.of(context, 'welcome_back'),
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -79,8 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Sign in to continue to your safety dashboard',
+              Text(
+                AppText.of(context, 'sign_in_subtitle'),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
               ),
@@ -88,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('University email', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
+                child: Text(AppText.of(context, 'university_email'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -103,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Password', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
+                child: Text(AppText.of(context, 'password'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -118,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                     icon: Icon(
-                      obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                     ),
                   ),
                 ),
@@ -133,8 +137,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
                     );
                   },
-                  child: const Text(
-                    'Forgot password?',
+                  child: Text(
+                    AppText.of(context, 'forgot_password'),
                     style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -151,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: const Text('Login', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                  child: Text(AppText.of(context, 'login'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                 ),
               ),
 
@@ -165,13 +169,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                 },
                 child: RichText(
-                  text: const TextSpan(
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                  text: TextSpan(
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
                     children: [
-                      TextSpan(text: "Don't have an account? "),
+                      TextSpan(text: AppText.of(context, 'no_account')),
                       TextSpan(
-                        text: 'Create Account',
-                        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                        text: AppText.of(context, 'create_account'),
+                        style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -181,11 +185,11 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               const Divider(color: AppColors.cardBorder),
               const SizedBox(height: 10),
-              const Text('Authorised authority', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text(AppText.of(context, 'authorised_authority'), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
               TextButton(
                 onPressed: loginAsAdmin,
-                child: const Text(
-                  'Admin / Authority login',
+                child: Text(
+                  AppText.of(context, 'admin_login'),
                   style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -193,6 +197,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

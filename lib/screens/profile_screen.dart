@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 import 'welcome_screen.dart';
 import 'change_password_screen.dart';
 
@@ -29,12 +30,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final departmentController = TextEditingController(text: 'BS Computer Science');
   final semesterController = TextEditingController(text: '8th Semester');
 
+  final newContactNameController = TextEditingController();
+  final newContactRelationController = TextEditingController();
+  final newContactPhoneController = TextEditingController();
+
   @override
   void dispose() {
     nameController.dispose();
     emailController.dispose();
     departmentController.dispose();
     semesterController.dispose();
+    newContactNameController.dispose();
+    newContactRelationController.dispose();
+    newContactPhoneController.dispose();
     super.dispose();
   }
 
@@ -76,12 +84,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('Profile', style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold)),
+        title: Text(AppText.of(context, 'profile'), style: const TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -143,14 +154,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       TextButton.icon(
                         onPressed: () => setState(() => isEditing = !isEditing),
                         icon: Icon(isEditing ? Icons.check : Icons.edit_outlined, size: 18),
-                        label: Text(isEditing ? 'Save' : 'Edit Profile'),
+                        label: Text(isEditing ? AppText.of(context, 'save') : AppText.of(context, 'edit_profile')),
                         style: TextButton.styleFrom(foregroundColor: AppColors.primary, padding: EdgeInsets.zero),
                       ),
                       TextButton(
                         onPressed: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangePasswordScreen()));
                         },
-                        child: const Text('Change password', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                        child: Text(AppText.of(context, 'change_password'), style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ),
@@ -160,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // Emergency contacts
             const SizedBox(height: 25),
-            const Text('Emergency contacts', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+            Text(AppText.of(context, 'emergency_contacts'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
             const SizedBox(height: 10),
             ...contacts.map((c) => Container(
                   margin: const EdgeInsets.only(bottom: 10),
@@ -204,22 +215,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Add contact', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
+                  Text(AppText.of(context, 'add_contact'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
                   const SizedBox(height: 10),
-                  const TextField(decoration: InputDecoration(labelText: 'Name', border: OutlineInputBorder())),
+                  TextField(
+                    controller: newContactNameController,
+                    decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
+                  ),
                   const SizedBox(height: 10),
-                  const Row(
+                  Row(
                     children: [
-                      Expanded(child: TextField(decoration: InputDecoration(labelText: 'Relation', border: OutlineInputBorder()))),
-                      SizedBox(width: 10),
-                      Expanded(child: TextField(decoration: InputDecoration(labelText: 'Phone', border: OutlineInputBorder()))),
+                      Expanded(
+                        child: TextField(
+                          controller: newContactRelationController,
+                          decoration: const InputDecoration(labelText: 'Relation', border: OutlineInputBorder()),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: newContactPhoneController,
+                          keyboardType: TextInputType.phone,
+                          decoration: const InputDecoration(labelText: 'Phone', border: OutlineInputBorder()),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        final name = newContactNameController.text.trim();
+                        final relation = newContactRelationController.text.trim();
+                        final phone = newContactPhoneController.text.trim();
+
+                        if (name.isEmpty || relation.isEmpty || phone.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please fill name, relation and phone.')),
+                          );
+                          return;
+                        }
+
+                        setState(() {
+                          contacts.add({'name': name, 'relation': relation, 'phone': phone});
+                          newContactNameController.clear();
+                          newContactRelationController.clear();
+                          newContactPhoneController.clear();
+                        });
+                      },
                       icon: const Icon(Icons.add),
                       label: const Text('+ Add Contact'),
                     ),
@@ -230,7 +273,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // Safety settings -- inline toggles
             const SizedBox(height: 25),
-            const Text('Safety settings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+            Text(AppText.of(context, 'safety_settings'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -275,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 },
                 icon: const Icon(Icons.logout),
-                label: const Text('Logout'),
+                label: Text(AppText.of(context, 'logout')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.danger,
                   foregroundColor: Colors.white,
@@ -286,6 +329,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+        );
+      },
     );
   }
 }

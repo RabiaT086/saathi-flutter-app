@@ -72,7 +72,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               onPressed: toggle,
-              icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+              icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined),
             ),
           ),
         ),

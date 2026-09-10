@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 import 'onboarding_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -7,7 +8,10 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
@@ -39,10 +43,10 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Smart harassment response & safety for students',
+                Text(
+                  AppText.of(context, 'welcome_tagline'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 17,
                     color: AppColors.textSecondary,
                   ),
@@ -67,9 +71,9 @@ class WelcomeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Get Started',
-                      style: TextStyle(
+                    child: Text(
+                      AppText.of(context, 'get_started'),
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
                       ),
@@ -81,6 +85,8 @@ class WelcomeScreen extends StatelessWidget {
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

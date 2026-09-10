@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 
 class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
@@ -40,7 +41,10 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -65,11 +69,11 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                     const SizedBox(width: 4),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Emergency', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text('Immediate help & evidence', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text(AppText.of(context, 'emergency'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text(AppText.of(context, 'immediate_help'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -77,7 +81,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               ),
               const SizedBox(height: 30),
               Text(
-                emergencyActive ? 'Emergency alert active' : 'Press and hold to send an emergency alert',
+                emergencyActive ? 'Emergency alert active' : AppText.of(context, 'press_hold_sos'),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.danger),
               ),
@@ -113,7 +117,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               const SizedBox(height: 30),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Will be notified', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+                child: Text(AppText.of(context, 'will_be_notified'), style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
               ),
               const SizedBox(height: 10),
               Container(
@@ -155,6 +159,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

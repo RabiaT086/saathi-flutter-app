@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_drawer.dart';
+import '../app_state.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -49,7 +50,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(),
       appBar: AppBar(
@@ -72,11 +76,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('AI Assistant', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text('General guidance, not legal advice', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Text(AppText.of(context, 'ai_assistant'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(AppText.of(context, 'general_guidance'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ),
@@ -105,12 +109,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: const Icon(Icons.smart_toy_outlined, size: 34, color: AppColors.primary),
                   ),
                   const SizedBox(height: 12),
-                  const Text('Saathi Assistant', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+                  Text(AppText.of(context, 'saathi_assistant'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
                   const SizedBox(height: 4),
-                  const Text(
-                    "Here to listen and guide you — you're not alone.",
+                  Text(
+                    AppText.of(context, 'assistant_subtitle'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -212,6 +216,8 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
+        );
+      },
     );
   }
 }

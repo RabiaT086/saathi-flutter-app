@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -9,7 +10,10 @@ class NotificationsScreen extends StatelessWidget {
     // Replace this with real data once the backend is connected.
     final List<Map<String, String>> notifications = [];
 
-    return Scaffold(
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppState.isUrdu,
+      builder: (context, _, __) {
+        return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
@@ -37,12 +41,12 @@ class NotificationsScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Notifications',
-                          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        Text(
+                          AppText.of(context, 'notifications'),
+                          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          notifications.isEmpty ? 'All caught up' : '${notifications.length} new updates',
+                          notifications.isEmpty ? AppText.of(context, 'all_caught_up') : '\${notifications.length} new updates',
                           style: const TextStyle(color: Colors.white70, fontSize: 13),
                         ),
                       ],
@@ -59,9 +63,9 @@ class NotificationsScreen extends StatelessWidget {
                         children: [
                           const Icon(Icons.notifications_none_rounded, size: 60, color: AppColors.primary),
                           const SizedBox(height: 16),
-                          const Text(
-                            'No notifications yet',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryDark),
+                          Text(
+                            AppText.of(context, 'no_notifications'),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryDark),
                           ),
                         ],
                       ),
@@ -87,6 +91,8 @@ class NotificationsScreen extends StatelessWidget {
           ],
         ),
       ),
+        );
+      },
     );
   }
 }
