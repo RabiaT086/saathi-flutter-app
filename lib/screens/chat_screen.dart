@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../widgets/app_drawer.dart';
 import '../app_state.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final VoidCallback? onBackToHome;
+  const ChatScreen({super.key, this.onBackToHome});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -50,41 +50,51 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
-      backgroundColor: AppColors.background,
-      drawer: const AppDrawer(),
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        title: const Text('Saathi', style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold)),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primaryDark, AppColors.primary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primaryDark, AppColors.primary],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            if (widget.onBackToHome != null) {
+                              widget.onBackToHome!();
+                            } else if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        ),
+                        const SizedBox(width: 4),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(AppText.of(context, 'ai_assistant'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(AppText.of(context, 'general_guidance'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(AppText.of(context, 'ai_assistant'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(AppText.of(context, 'general_guidance'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                ],
-              ),
-            ),
-          ),
 
           // Welcome banner card with chatbot avatar
           Padding(
@@ -93,7 +103,7 @@ class _ChatScreenState extends State<ChatScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.cardBorder),
               ),
@@ -158,7 +168,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     padding: const EdgeInsets.all(14),
                     constraints: const BoxConstraints(maxWidth: 300),
                     decoration: BoxDecoration(
-                      color: isUser ? AppColors.primary : Colors.white,
+                      color: isUser ? AppColors.primary : AppColors.cardBackground,
                       borderRadius: BorderRadius.circular(18),
                       border: isUser ? null : Border.all(color: AppColors.cardBorder),
                     ),
@@ -180,17 +190,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 return OutlinedButton(
                   onPressed: () => sendMessage(text),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.cardBorder),
+                    side: BorderSide(color: AppColors.cardBorder),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
-                  child: Text(text, style: const TextStyle(fontSize: 12, color: AppColors.primaryDark)),
+                  child: Text(text, style: TextStyle(fontSize: 12, color: AppColors.primaryDark)),
                 );
               }).toList(),
             ),
           ),
           Container(
             padding: const EdgeInsets.all(12),
-            color: Colors.white,
+            color: AppColors.cardBackground,
             child: Row(
               children: [
                 Expanded(
@@ -214,9 +224,10 @@ class _ChatScreenState extends State<ChatScreen> {
               ],
             ),
           ),
-        ],
-      ),
-        );
+            ],
+          ),
+        ),
+      );
       },
     );
   }

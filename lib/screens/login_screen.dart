@@ -4,7 +4,7 @@ import '../app_state.dart';
 import 'forgot_password_screen.dart';
 import 'signup_screen.dart';
 import 'main_shell.dart';
-import 'admin_dashboard_screen.dart';
+import 'admin_login_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void loginAsAdmin() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+      MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
     );
   }
 
@@ -52,9 +52,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  hintText: 'you@university.edu.pk',
+                  hintText: 'name@example.com',
                   border: OutlineInputBorder(),
                 ),
               ),

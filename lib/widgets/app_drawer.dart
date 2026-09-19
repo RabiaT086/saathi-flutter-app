@@ -59,13 +59,16 @@ class _AppDrawerState extends State<AppDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) => _buildDrawer(context),
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) => _buildDrawer(context),
     );
   }
 
   Widget _buildDrawer(BuildContext context) {
+    final isUrdu = AppState.isUrdu.value;
+    final isDark = AppState.themeMode.value == ThemeMode.dark;
+
     return Drawer(
       backgroundColor: AppColors.background,
       child: SafeArea(
@@ -102,112 +105,113 @@ class _AppDrawerState extends State<AppDrawer> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _sectionTitle(AppText.of(context, 'language')),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: AppState.isUrdu,
-                    builder: (context, isUrdu, _) {
-                      return Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: AppColors.chipBackground, borderRadius: BorderRadius.circular(12)),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => AppState.isUrdu.value = false,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(color: !isUrdu ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-                                  child: Text('English', textAlign: TextAlign.center, style: TextStyle(color: !isUrdu ? Colors.white : AppColors.primaryDark, fontWeight: FontWeight.w600)),
-                                ),
-                              ),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(color: AppColors.chipBackground, borderRadius: BorderRadius.circular(12)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              AppState.isUrdu.value = false;
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(color: !isUrdu ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(10)),
+                              child: Text('English', textAlign: TextAlign.center, style: TextStyle(color: !isUrdu ? Colors.white : AppColors.primaryDark, fontWeight: FontWeight.w600)),
                             ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => AppState.isUrdu.value = true,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(color: isUrdu ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-                                  child: Text('اردو (Urdu)', textAlign: TextAlign.center, style: TextStyle(color: isUrdu ? Colors.white : AppColors.primaryDark, fontWeight: FontWeight.w600)),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      );
-                    },
+                        Expanded(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              AppState.isUrdu.value = true;
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(color: isUrdu ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(10)),
+                              child: Text('اردو (Urdu)', textAlign: TextAlign.center, style: TextStyle(color: isUrdu ? Colors.white : AppColors.primaryDark, fontWeight: FontWeight.w600)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   _sectionTitle(AppText.of(context, 'theme')),
-                  ValueListenableBuilder<ThemeMode>(
-                    valueListenable: AppState.themeMode,
-                    builder: (context, mode, _) {
-                      final isDark = mode == ThemeMode.dark;
-                      return Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: AppColors.chipBackground, borderRadius: BorderRadius.circular(12)),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => AppState.themeMode.value = ThemeMode.light,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(color: !isDark ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.light_mode_outlined, size: 16, color: !isDark ? Colors.white : AppColors.primaryDark),
-                                      const SizedBox(width: 6),
-                                      Text(AppText.of(context, 'light_mode'), style: TextStyle(color: !isDark ? Colors.white : AppColors.primaryDark, fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
-                                ),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(color: AppColors.chipBackground, borderRadius: BorderRadius.circular(12)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              AppState.themeMode.value = ThemeMode.light;
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(color: !isDark ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(10)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.light_mode_outlined, size: 16, color: !isDark ? Colors.white : AppColors.primaryDark),
+                                  const SizedBox(width: 6),
+                                  Text(AppText.of(context, 'light_mode'), style: TextStyle(color: !isDark ? Colors.white : AppColors.primaryDark, fontWeight: FontWeight.w600)),
+                                ],
                               ),
                             ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => AppState.themeMode.value = ThemeMode.dark,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(color: isDark ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.dark_mode_outlined, size: 16, color: isDark ? Colors.white : AppColors.primaryDark),
-                                      const SizedBox(width: 6),
-                                      Text(AppText.of(context, 'dark_mode'), style: TextStyle(color: isDark ? Colors.white : AppColors.primaryDark, fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      );
-                    },
+                        Expanded(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              AppState.themeMode.value = ThemeMode.dark;
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(color: isDark ? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(10)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.dark_mode_outlined, size: 16, color: isDark ? Colors.white : AppColors.primaryDark),
+                                  const SizedBox(width: 6),
+                                  Text(AppText.of(context, 'dark_mode'), style: TextStyle(color: isDark ? Colors.white : AppColors.primaryDark, fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   _sectionTitle(AppText.of(context, 'notification_settings')),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.cardBorder)),
+                    decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.cardBorder)),
                     child: Column(
                       children: [
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           value: pushNotifications,
-                          activeColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary,
                           onChanged: (v) => setState(() => pushNotifications = v),
-                          title: const Text('Push notifications', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
-                          subtitle: const Text('Case updates and alert confirmations', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                          title: Text(AppText.of(context, 'push_notifications'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
+                          subtitle: Text(AppText.of(context, 'push_notifications_desc'), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                         ),
                         const Divider(height: 1, color: AppColors.cardBorder),
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           value: caseUpdateEmails,
-                          activeColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary,
                           onChanged: (v) => setState(() => caseUpdateEmails = v),
-                          title: const Text('Case update emails', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
-                          subtitle: const Text('Email a copy of every status change', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                          title: Text(AppText.of(context, 'case_update_emails'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
+                          subtitle: Text(AppText.of(context, 'case_update_emails_desc'), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                         ),
                       ],
                     ),
@@ -216,14 +220,14 @@ class _AppDrawerState extends State<AppDrawer> {
                   _sectionTitle(AppText.of(context, 'permissions')),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.cardBorder)),
+                    decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.cardBorder)),
                     child: Column(
                       children: [
-                        _permissionRow(Icons.camera_alt_outlined, 'Camera', 'Allowed'),
+                        _permissionRow(Icons.camera_alt_outlined, AppText.of(context, 'camera'), AppText.of(context, 'allowed')),
                         const Divider(height: 1, color: AppColors.cardBorder),
-                        _permissionRow(Icons.mic_none_outlined, 'Microphone', 'Allowed'),
+                        _permissionRow(Icons.mic_none_outlined, AppText.of(context, 'microphone'), AppText.of(context, 'allowed')),
                         const Divider(height: 1, color: AppColors.cardBorder),
-                        _permissionRow(Icons.location_on_outlined, 'Location', 'While using app'),
+                        _permissionRow(Icons.location_on_outlined, AppText.of(context, 'location_permission'), AppText.of(context, 'while_using_app')),
                       ],
                     ),
                   ),
@@ -231,7 +235,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   _sectionTitle(AppText.of(context, 'more')),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.cardBorder)),
+                    decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.cardBorder)),
                     child: Column(
                       children: [
                         _linkRow(Icons.shield_outlined, AppText.of(context, 'privacy_policy'), privacyPolicyContent),

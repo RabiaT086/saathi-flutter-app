@@ -36,13 +36,13 @@ class _ReportScreenState extends State<ReportScreen> {
     super.dispose();
   }
 
-  String get _dateLabel {
-    if (selectedDate == null) return 'Select date';
+  String _dateLabel(BuildContext context) {
+    if (selectedDate == null) return AppText.of(context, 'select_date');
     return '${selectedDate!.day.toString().padLeft(2, '0')}/${selectedDate!.month.toString().padLeft(2, '0')}/${selectedDate!.year}';
   }
 
-  String get _timeLabel {
-    if (selectedTime == null) return 'Select time';
+  String _timeLabel(BuildContext context) {
+    if (selectedTime == null) return AppText.of(context, 'select_time');
     return selectedTime!.format(context);
   }
 
@@ -96,9 +96,9 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -139,7 +139,7 @@ class _ReportScreenState extends State<ReportScreen> {
               _label(AppText.of(context, 'harassment_type')),
               DropdownButtonFormField<String>(
                 initialValue: selectedType,
-                decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Select type of harassment'),
+                decoration: InputDecoration(border: const OutlineInputBorder(), hintText: AppText.of(context, 'select_harassment_type')),
                 items: harassmentTypes.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
                 onChanged: (value) => setState(() => selectedType = value),
               ),
@@ -155,7 +155,7 @@ class _ReportScreenState extends State<ReportScreen> {
                           onTap: _pickDate,
                           child: InputDecorator(
                             decoration: const InputDecoration(border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today_outlined)),
-                            child: Text(_dateLabel, style: TextStyle(color: selectedDate == null ? AppColors.textMuted : AppColors.primaryDark)),
+                            child: Text(_dateLabel(context), style: TextStyle(color: selectedDate == null ? AppColors.textMuted : AppColors.primaryDark)),
                           ),
                         ),
                       ],
@@ -171,7 +171,7 @@ class _ReportScreenState extends State<ReportScreen> {
                           onTap: _pickTime,
                           child: InputDecorator(
                             decoration: const InputDecoration(border: OutlineInputBorder(), suffixIcon: Icon(Icons.access_time)),
-                            child: Text(_timeLabel, style: TextStyle(color: selectedTime == null ? AppColors.textMuted : AppColors.primaryDark)),
+                            child: Text(_timeLabel(context), style: TextStyle(color: selectedTime == null ? AppColors.textMuted : AppColors.primaryDark)),
                           ),
                         ),
                       ],
@@ -181,33 +181,33 @@ class _ReportScreenState extends State<ReportScreen> {
               ),
 
               _label(AppText.of(context, 'location')),
-              TextField(controller: locationController, decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'e.g. Cafeteria block, Main Campus')),
+              TextField(controller: locationController, decoration: InputDecoration(border: const OutlineInputBorder(), hintText: AppText.of(context, 'location_hint'))),
 
               _label(AppText.of(context, 'description_incident')),
               TextField(
                 controller: descriptionController,
                 maxLines: 4,
-                decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Describe what happened, who was involved and whether it happened before.'),
+                decoration: InputDecoration(border: const OutlineInputBorder(), hintText: AppText.of(context, 'description_hint')),
               ),
 
               _label(AppText.of(context, 'additional_info')),
               TextField(
                 controller: additionalInfoController,
                 maxLines: 3,
-                decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Witnesses, previous complaints, anything else the committee should know.'),
+                decoration: InputDecoration(border: const OutlineInputBorder(), hintText: AppText.of(context, 'additional_info_hint')),
               ),
 
               _label(AppText.of(context, 'evidence_attachment')),
               Row(
                 children: [
-                  _uploadTile(Icons.image_outlined, 'Upload Photo'),
-                  _uploadTile(Icons.videocam_outlined, 'Upload Video'),
+                  _uploadTile(Icons.image_outlined, AppText.of(context, 'upload_photo')),
+                  _uploadTile(Icons.videocam_outlined, AppText.of(context, 'upload_video')),
                 ],
               ),
               Row(
                 children: [
-                  _uploadTile(Icons.mic_none_outlined, 'Upload Audio'),
-                  _uploadTile(Icons.description_outlined, 'Upload Document'),
+                  _uploadTile(Icons.mic_none_outlined, AppText.of(context, 'upload_audio')),
+                  _uploadTile(Icons.description_outlined, AppText.of(context, 'upload_document')),
                 ],
               ),
 

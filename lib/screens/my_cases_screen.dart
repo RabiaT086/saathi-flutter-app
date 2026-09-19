@@ -22,9 +22,9 @@ class _MyCasesScreenState extends State<MyCasesScreen> {
       builder: (context, cases, __) {
         final filtered = selectedFilter == 'All' ? cases : cases.where((c) => c['status'] == selectedFilter).toList();
 
-        return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+        return AnimatedBuilder(
+          animation: AppState.listenable,
+          builder: (context, _) {
         return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -124,7 +124,7 @@ class _MyCasesScreenState extends State<MyCasesScreen> {
                           child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.cardBackground,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.cardBorder),
                           ),

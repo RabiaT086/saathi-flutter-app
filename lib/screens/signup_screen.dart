@@ -82,9 +82,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -114,7 +114,7 @@ class _SignupScreenState extends State<SignupScreen> {
             TextField(
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(hintText: 'you@university.edu.pk', border: OutlineInputBorder()),
+              decoration: const InputDecoration(hintText: 'name@example.com', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 18),
 
@@ -123,7 +123,7 @@ class _SignupScreenState extends State<SignupScreen> {
               controller: passwordController,
               obscureText: obscurePassword,
               decoration: InputDecoration(
-                hintText: 'At least 6 characters',
+                hintText: AppText.of(context, 'at_least_6_chars'),
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -142,7 +142,7 @@ class _SignupScreenState extends State<SignupScreen> {
               controller: confirmPasswordController,
               obscureText: obscureConfirmPassword,
               decoration: InputDecoration(
-                hintText: 'Re-enter password',
+                hintText: AppText.of(context, 'reenter_password'),
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -156,21 +156,21 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
             const SizedBox(height: 18),
 
-            _label('Student / University ID'),
+            _label(AppText.of(context, 'student_university_id')),
             TextField(
               controller: universityIdController,
               decoration: const InputDecoration(hintText: 'e.g. FUU-CS-2022-114', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 18),
 
-            _label('Emergency contact name'),
+            _label(AppText.of(context, 'emergency_contact_name')),
             TextField(
               controller: emergencyNameController,
-              decoration: const InputDecoration(hintText: 'Sister, parent or guardian', border: OutlineInputBorder()),
+              decoration: InputDecoration(hintText: AppText.of(context, 'relation_hint'), border: const OutlineInputBorder()),
             ),
             const SizedBox(height: 18),
 
-            _label('Emergency contact number'),
+            _label(AppText.of(context, 'emergency_contact_number')),
             TextField(
               controller: emergencyNumberController,
               keyboardType: TextInputType.phone,

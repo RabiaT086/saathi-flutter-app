@@ -5,7 +5,8 @@ import 'welcome_screen.dart';
 import 'change_password_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final VoidCallback? onBackToHome;
+  const ProfileScreen({super.key, this.onBackToHome});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -84,27 +85,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        title: Text(AppText.of(context, 'profile'), style: const TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primaryDark, AppColors.primary],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            if (widget.onBackToHome != null) {
+                              widget.onBackToHome!();
+                            } else if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        ),
+                        const SizedBox(width: 4),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(AppText.of(context, 'profile'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                            Text(AppText.of(context, 'manage_account_safety'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
             // Name / Dept / Email / Edit / Change password
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.cardBorder),
               ),
@@ -129,10 +161,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _infoField('Name', nameController),
-                                  _infoField('Department', departmentController),
-                                  _infoField('Semester', semesterController),
-                                  _infoField('Email', emailController),
+                                  _infoField(AppText.of(context, 'name'), nameController),
+                                  _infoField(AppText.of(context, 'department'), departmentController),
+                                  _infoField(AppText.of(context, 'semester'), semesterController),
+                                  _infoField(AppText.of(context, 'email'), emailController),
                                 ],
                               )
                             : Column(
@@ -177,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.cardBackground,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AppColors.cardBorder),
                   ),
@@ -208,7 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.cardBorder),
               ),
@@ -219,7 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 10),
                   TextField(
                     controller: newContactNameController,
-                    decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
+                    decoration: InputDecoration(labelText: AppText.of(context, 'name'), border: const OutlineInputBorder()),
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -227,7 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         child: TextField(
                           controller: newContactRelationController,
-                          decoration: const InputDecoration(labelText: 'Relation', border: OutlineInputBorder()),
+                          decoration: InputDecoration(labelText: AppText.of(context, 'relation'), border: const OutlineInputBorder()),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -235,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: TextField(
                           controller: newContactPhoneController,
                           keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(labelText: 'Phone', border: OutlineInputBorder()),
+                          decoration: InputDecoration(labelText: AppText.of(context, 'phone'), border: const OutlineInputBorder()),
                         ),
                       ),
                     ],
@@ -264,7 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         });
                       },
                       icon: const Icon(Icons.add),
-                      label: const Text('+ Add Contact'),
+                      label: Text('+ ${AppText.of(context, 'add_contact')}'),
                     ),
                   ),
                 ],
@@ -278,23 +310,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.cardBorder),
               ),
               child: Column(
                 children: [
-                  _toggleRow('Shake detection', 'Shake the phone to trigger an alert', shakeDetection, (v) => setState(() => shakeDetection = v)),
+                  _toggleRow(AppText.of(context, 'shake_detection'), AppText.of(context, 'shake_detection_desc'), shakeDetection, (v) => setState(() => shakeDetection = v)),
                   const Divider(height: 1, color: AppColors.cardBorder),
-                  _toggleRow('Auto-record on emergency', 'Start audio/video capture with alerts', autoRecord, (v) => setState(() => autoRecord = v)),
+                  _toggleRow(AppText.of(context, 'auto_record'), AppText.of(context, 'auto_record_desc'), autoRecord, (v) => setState(() => autoRecord = v)),
                   const Divider(height: 1, color: AppColors.cardBorder),
-                  _toggleRow('Push notifications', 'Case updates and alert confirmations', pushNotifications, (v) => setState(() => pushNotifications = v)),
+                  _toggleRow(AppText.of(context, 'push_notifications'), AppText.of(context, 'push_notifications_desc'), pushNotifications, (v) => setState(() => pushNotifications = v)),
                   const Divider(height: 1, color: AppColors.cardBorder),
-                  _toggleRow('Case update emails', 'Email a copy of every status change', caseUpdateEmails, (v) => setState(() => caseUpdateEmails = v)),
+                  _toggleRow(AppText.of(context, 'case_update_emails'), AppText.of(context, 'case_update_emails_desc'), caseUpdateEmails, (v) => setState(() => caseUpdateEmails = v)),
                   const Divider(height: 1, color: AppColors.cardBorder),
-                  _toggleRow('Share location with authority', 'Committee sees live location during alerts', shareLocationWithAuthority, (v) => setState(() => shareLocationWithAuthority = v)),
+                  _toggleRow(AppText.of(context, 'share_location_authority'), AppText.of(context, 'share_location_authority_desc'), shareLocationWithAuthority, (v) => setState(() => shareLocationWithAuthority = v)),
                   const Divider(height: 1, color: AppColors.cardBorder),
-                  _toggleRow('Hide identity from peers', 'Your name is never shown to other students', hideIdentityFromPeers, (v) => setState(() => hideIdentityFromPeers = v)),
+                  _toggleRow(AppText.of(context, 'hide_identity_peers'), AppText.of(context, 'hide_identity_peers_desc'), hideIdentityFromPeers, (v) => setState(() => hideIdentityFromPeers = v)),
                 ],
               ),
             ),
@@ -326,10 +358,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-          ],
+              ],
+            ),
+          ),
         ),
-      ),
-        );
+      );
       },
     );
   }

@@ -10,9 +10,9 @@ class NotificationsScreen extends StatelessWidget {
     // Replace this with real data once the backend is connected.
     final List<Map<String, String>> notifications = [];
 
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -46,7 +46,7 @@ class NotificationsScreen extends StatelessWidget {
                           style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          notifications.isEmpty ? AppText.of(context, 'all_caught_up') : '\${notifications.length} new updates',
+                          notifications.isEmpty ? AppText.of(context, 'all_caught_up') : '${notifications.length} new updates',
                           style: const TextStyle(color: Colors.white70, fontSize: 13),
                         ),
                       ],
@@ -79,7 +79,7 @@ class NotificationsScreen extends StatelessWidget {
                         return Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.cardBackground,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.cardBorder),
                           ),

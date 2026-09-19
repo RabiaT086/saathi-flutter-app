@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 import 'login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -25,26 +26,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int currentPage = 0;
 
-  final List<_OnboardingSlide> slides = const [
-    _OnboardingSlide(
-      icon: Icons.gpp_maybe_outlined,
-      title: 'Report harassment safely',
-      description:
-          'Submit a detailed complaint with date, time, location and evidence. Only authorised university personnel can review it.',
-    ),
-    _OnboardingSlide(
-      icon: Icons.notifications_active_outlined,
-      title: 'Get emergency assistance',
-      description:
-          'One tap on the panic button — or a shake of your phone — shares your live location and alerts your emergency contacts.',
-    ),
-    _OnboardingSlide(
-      icon: Icons.find_in_page_outlined,
-      title: 'Track your complaint',
-      description:
-          'Follow your case from Submitted to Resolved with a clear timeline and updates from the committee.',
-    ),
-  ];
+  List<_OnboardingSlide> _getSlides(BuildContext context) => [
+        _OnboardingSlide(
+          icon: Icons.gpp_maybe_outlined,
+          title: AppText.of(context, 'onboarding_title_1'),
+          description: AppText.of(context, 'onboarding_desc_1'),
+        ),
+        _OnboardingSlide(
+          icon: Icons.notifications_active_outlined,
+          title: AppText.of(context, 'onboarding_title_2'),
+          description: AppText.of(context, 'onboarding_desc_2'),
+        ),
+        _OnboardingSlide(
+          icon: Icons.find_in_page_outlined,
+          title: AppText.of(context, 'onboarding_title_3'),
+          description: AppText.of(context, 'onboarding_desc_3'),
+        ),
+      ];
 
   void goToLogin() {
     Navigator.pushReplacement(
@@ -61,11 +59,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLastPage = currentPage == slides.length - 1;
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
+        final slides = _getSlides(context);
+        final isLastPage = currentPage == slides.length - 1;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
         child: Column(
           children: [
             Align(
@@ -74,8 +76,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: const EdgeInsets.all(16),
                 child: TextButton(
                   onPressed: goToLogin,
-                  child: const Text(
-                    'Skip',
+                  child: Text(
+                    AppText.of(context, 'skip'),
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
@@ -173,7 +175,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                       child: Text(
-                        isLastPage ? 'Get Started' : 'Next',
+                        isLastPage ? AppText.of(context, 'get_started') : AppText.of(context, 'next'),
                         style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -186,7 +188,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           curve: Curves.easeInOut,
                         );
                       },
-                      child: const Text('Back', style: TextStyle(color: AppColors.textSecondary)),
+                      child: Text(AppText.of(context, 'back'), style: TextStyle(color: AppColors.textSecondary)),
                     ),
                 ],
               ),
@@ -195,5 +197,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
       ),
     );
-  }
+    },
+  );
+}
 }
