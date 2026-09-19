@@ -29,11 +29,11 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(radius: 16, backgroundColor: fg.withOpacity(0.15), child: Icon(icon, color: fg, size: 18)),
+              CircleAvatar(radius: 16, backgroundColor: fg.withValues(alpha: 0.15), child: Icon(icon, color: fg, size: 18)),
               const SizedBox(height: 10),
               Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: fg)),
               const SizedBox(height: 3),
-              Text(subtitle, style: TextStyle(fontSize: 11, color: fg.withOpacity(0.8))),
+              Text(subtitle, style: TextStyle(fontSize: 11, color: fg.withValues(alpha: 0.8))),
             ],
           ),
         ),
@@ -231,7 +231,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 10),
             ValueListenableBuilder<List<Map<String, String>>>(
               valueListenable: DataStore.cases,
-              builder: (context, cases, __) {
+              builder: (context, cases, _) {
                 if (cases.isEmpty) {
                   return Container(
                     padding: const EdgeInsets.all(16),

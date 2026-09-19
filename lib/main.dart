@@ -7,7 +7,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
     url: 'https://cvpfdgyccgponvyastub.supabase.co',
-    anonKey: 'sb_publishable_xebqc_1uYKC4_BBmedIqtg_AK_DA6eM',
+    publishableKey:  'sb_publishable_xebqc_1uYKC4_BBmedIqtg_AK_DA6eM',
   );
   runApp(const SaathiApp());
 }

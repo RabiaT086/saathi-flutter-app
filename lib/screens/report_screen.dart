@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
@@ -171,7 +171,7 @@ class _ReportScreenState extends State<ReportScreen> {
         location: location,
         description: description,
         additionalInfo: additionalInfoController.text.trim(),
-        attachmentNames: _attachedFiles.map((f) => f.name).toList(),
+        files: _attachedFiles,
       );
 
       if (!mounted) return;

@@ -61,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-          Switch(value: value, activeColor: AppColors.primary, onChanged: onChanged),
+          Switch(value: value, activeThumbColor: AppColors.primary, onChanged: onChanged),
         ],
       ),
     );

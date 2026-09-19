@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
 import 'home_screen.dart';
@@ -30,16 +30,15 @@ class _MainShellState extends State<MainShell> {
     });
   }
 
-  Future<bool> _onWillPop() async {
+  void _handlePop(bool didPop) {
+    if (didPop) return;
     if (currentIndex != 0) {
       goToTab(0);
-      return false;
+      return;
     }
     if (homeNavigatorKey.currentState?.canPop() == true) {
       homeNavigatorKey.currentState?.pop();
-      return false;
     }
-    return true;
   }
 
   late final List<Widget> tabs = [
@@ -57,8 +56,11 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    final bool canPop = currentIndex == 0 && !(homeNavigatorKey.currentState?.canPop() ?? false);
+
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: (didPop, _) => _handlePop(didPop),
       child: AnimatedBuilder(
         animation: AppState.listenable,
         builder: (context, _) {

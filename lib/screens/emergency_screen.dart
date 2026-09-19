@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import '../services/location_service.dart';
+import '../services/supabase_service.dart';
 
 class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
@@ -28,14 +30,20 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     super.dispose();
   }
 
-  void activateEmergency() {
+  Future<void> activateEmergency() async {
     setState(() {
       emergencyActive = true;
     });
 
-    // Placeholder location text until this is wired to the geolocator package
-    // in the native Flutter build.
-    const placeholderLocation = 'Federal Urdu University, Gulshan Campus, Karachi';
+    final loc = await LocationService.getCurrentLocation();
+    final placeholderLocation = loc.readableLocation;
+    await SupabaseService.triggerEmergencyAlert(
+      student: 'Student Alert',
+      location: loc.readableLocation,
+      phone: '+92 301 7654321',
+      mapsUrl: loc.mapsUrl,
+    );
+    if (!mounted) return;
     final now = DateTime.now();
     final timeText = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
@@ -53,7 +61,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               Row(children: [
                 const Icon(Icons.location_on_outlined, size: 16, color: AppColors.primary),
                 const SizedBox(width: 6),
-                const Expanded(child: Text(placeholderLocation, style: TextStyle(fontSize: 13))),
+                Expanded(child: Text(placeholderLocation, style: TextStyle(fontSize: 13))),
               ]),
               const SizedBox(height: 6),
               Row(children: [

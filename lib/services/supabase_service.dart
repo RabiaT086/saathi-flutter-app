@@ -1,8 +1,9 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data_store.dart';
 
-/// Centralized service for Supabase authentication and database operations.
+/// Centralized service for Supabase authentication, database, and storage operations.
 /// Includes graceful fallback to [DataStore] when offline or before DB tables are configured.
 class SupabaseService {
   static SupabaseClient? get client {
@@ -70,7 +71,6 @@ class SupabaseService {
       return {'success': false, 'message': 'Invalid credentials.'};
     } on AuthException catch (e) {
       debugPrint('Supabase signIn AuthException: $e');
-      // If invalid login credentials from Supabase, return message
       return {'success': false, 'message': e.message};
     } catch (e) {
       debugPrint('Supabase signIn fallback: $e');
@@ -105,6 +105,37 @@ class SupabaseService {
     }
   }
 
+  /// Uploads picked files to Supabase storage bucket 'evidence-files'
+  /// Returns list of stored file URLs or file names.
+  static Future<List<String>> uploadEvidenceFiles(List<PlatformFile> files) async {
+    final List<String> uploadedPaths = [];
+    if (client == null || files.isEmpty) {
+      return files.map((f) => f.name).toList();
+    }
+
+    for (final file in files) {
+      try {
+        final bytes = await file.readAsBytes();
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.name}';
+        final storageResponse = await client!.storage
+            .from('evidence-files')
+            .uploadBinary(fileName, bytes);
+
+        if (storageResponse.isNotEmpty) {
+          final publicUrl = client!.storage.from('evidence-files').getPublicUrl(fileName);
+          uploadedPaths.add(publicUrl);
+        } else {
+          uploadedPaths.add(file.name);
+        }
+      } catch (e) {
+        debugPrint('File upload note: $e');
+        // Fallback to storing filename
+        uploadedPaths.add(file.name);
+      }
+    }
+    return uploadedPaths;
+  }
+
   /// Submit a harassment complaint, storing locally and in Supabase
   static Future<String> submitComplaint({
     required String type,
@@ -113,6 +144,7 @@ class SupabaseService {
     required String description,
     String? additionalInfo,
     String? student,
+    List<PlatformFile>? files,
     List<String>? attachmentNames,
     String priority = 'MEDIUM',
   }) async {
@@ -126,7 +158,16 @@ class SupabaseService {
       priority: priority,
     );
 
-    // 2. Try persisting to Supabase complaints table
+    // 2. Upload files if provided
+    List<String> storedAttachments = attachmentNames ?? [];
+    if (files != null && files.isNotEmpty) {
+      final uploaded = await uploadEvidenceFiles(files);
+      if (uploaded.isNotEmpty) {
+        storedAttachments = uploaded;
+      }
+    }
+
+    // 3. Try persisting to Supabase complaints table
     try {
       if (client != null) {
         await client!.from('complaints').insert({
@@ -137,7 +178,7 @@ class SupabaseService {
           'location': location,
           'description': description,
           'additional_info': additionalInfo ?? '',
-          'attachments': attachmentNames ?? [],
+          'attachments': storedAttachments,
           'priority': priority,
           'status': 'Submitted',
           'created_at': DateTime.now().toIso8601String(),
@@ -148,6 +189,44 @@ class SupabaseService {
     }
 
     return localId;
+  }
+
+  /// Trigger and record an Emergency SOS alert in both local DataStore and Supabase
+  static Future<void> triggerEmergencyAlert({
+    required String student,
+    required String location,
+    required String phone,
+    String? mapsUrl,
+  }) async {
+    final alertId = 'SOS-${DateTime.now().millisecondsSinceEpoch % 10000}';
+    final newAlert = {
+      'id': alertId,
+      'student': student,
+      'location': location,
+      'time': 'Just now',
+      'status': 'Active',
+      'phone': phone,
+      'mapsUrl': mapsUrl ?? '',
+    };
+
+    // Update local reactive list
+    DataStore.emergencyAlerts.value = [newAlert, ...DataStore.emergencyAlerts.value];
+
+    try {
+      if (client != null) {
+        await client!.from('emergency_alerts').insert({
+          'alert_id': alertId,
+          'student_name': student,
+          'location_text': location,
+          'phone': phone,
+          'maps_url': mapsUrl ?? '',
+          'status': 'Active',
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
+    } catch (e) {
+      debugPrint('Supabase emergency alert insert note: $e');
+    }
   }
 
   /// Update case status in both DataStore and Supabase

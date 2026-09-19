@@ -19,7 +19,7 @@ class _MyCasesScreenState extends State<MyCasesScreen> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<Map<String, String>>>(
       valueListenable: DataStore.cases,
-      builder: (context, cases, __) {
+      builder: (context, cases, _) {
         final filtered = selectedFilter == 'All' ? cases : cases.where((c) => c['status'] == selectedFilter).toList();
 
         return AnimatedBuilder(
