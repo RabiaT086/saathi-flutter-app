@@ -6,6 +6,12 @@ class AdminStatCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color? iconColor;
+  final Color? borderColor;
+  final double borderWidth;
+  final Color? backgroundColor;
+  final Color? valueColor;
+  final Color? glowColor;
+  final String? badgeText;
   final VoidCallback? onTap;
 
   const AdminStatCard({
@@ -14,59 +20,105 @@ class AdminStatCard extends StatelessWidget {
     required this.value,
     required this.icon,
     this.iconColor,
+    this.borderColor,
+    this.borderWidth = 1.2,
+    this.backgroundColor,
+    this.valueColor,
+    this.glowColor,
+    this.badgeText,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.cardBorder, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: AppColors.isDark ? 0.3 : 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: (iconColor ?? AppColors.primary).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
+    final effectiveBorderColor = borderColor ?? AppColors.cardBorder;
+    final effectiveIconColor = iconColor ?? AppColors.primary;
+    final effectiveBgColor = backgroundColor ?? AppColors.cardBackground;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          decoration: BoxDecoration(
+            color: effectiveBgColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: effectiveBorderColor, width: borderWidth),
+            boxShadow: [
+              if (glowColor != null)
+                BoxShadow(
+                  color: glowColor!,
+                  blurRadius: 14,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 4),
+                )
+              else
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: AppColors.isDark ? 0.3 : 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: effectiveIconColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, color: effectiveIconColor, size: 22),
+                  ),
+                  if (badgeText != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: effectiveIconColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: effectiveIconColor.withValues(alpha: 0.5), width: 1),
+                      ),
+                      child: Text(
+                        badgeText!,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: effectiveIconColor,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              child: Icon(icon, color: iconColor ?? AppColors.primary, size: 22),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryDark,
-                letterSpacing: -0.5,
+              const SizedBox(height: 14),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: valueColor ?? AppColors.primaryDark,
+                  letterSpacing: -0.5,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
+              const SizedBox(height: 4),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -31,6 +31,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   final List<String> _filters = [
     'All',
+    'Open',
+    'High Priority',
+    'Emergency',
     'Submitted',
     'Under Review',
     'Investigation',
@@ -109,77 +112,122 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         final allCases = DataStore.cases.value;
         final allAlerts = DataStore.emergencyAlerts.value;
 
-        return Scaffold(
-          key: _scaffoldKey,
-          backgroundColor: AppColors.background,
-          drawer: AdminDrawer(
-            onSwitchToCases: () {
+        return PopScope(
+          canPop: _currentTabIndex == 0,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            if (_currentTabIndex != 0) {
               setState(() {
-                _currentTabIndex = 1;
+                _currentTabIndex = 0;
                 _selectedFilter = 'All';
+                _searchController.clear();
               });
-            },
-          ),
-          body: SafeArea(
-            child: Column(
-              children: [
-                // Top Custom App Bar matching Screenshots
-                _buildHeader(context, allCases.length),
-
-                // Main Tab Body
-                Expanded(
-                  child: _currentTabIndex == 0
-                      ? _buildDashboardTab(context, allCases, allAlerts)
-                      : _buildCaseManagementTab(context, allCases),
-                ),
-              ],
+            }
+          },
+          child: Scaffold(
+            key: _scaffoldKey,
+            backgroundColor: AppColors.background,
+            drawer: AdminDrawer(
+              onSwitchToCases: () {
+                setState(() {
+                  _currentTabIndex = 1;
+                  _selectedFilter = 'All';
+                  _searchController.clear();
+                });
+              },
             ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(context, allCases.length),
+                  Expanded(
+                    child: _currentTabIndex == 0
+                        ? _buildDashboardTab(context, allCases, allAlerts)
+                        : _buildCaseManagementTab(context, allCases, allAlerts),
+                  ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: _buildBottomNavigation(context),
           ),
-          bottomNavigationBar: _buildBottomNavigation(context),
         );
       },
     );
   }
 
-  // --- TOP CUSTOM HEADER (Matches reference images) ---
+  // --- TOP CUSTOM HEADER ---
   Widget _buildHeader(BuildContext context, int totalCount) {
     final isUrdu = AppState.isUrdu.value;
     final isDashboard = _currentTabIndex == 0;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
         border: Border(bottom: BorderSide(color: AppColors.cardBorder, width: 1)),
       ),
       child: Row(
         children: [
-          // Hamburger drawer icon button
-          IconButton(
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            icon: const Icon(Icons.menu_rounded, size: 24),
-            color: AppColors.primaryDark,
-            tooltip: 'Authority Menu',
-          ),
-          const SizedBox(width: 4),
-
-          // Teal circular icon with 4-square grid (as seen in screenshots)
+          if (!isDashboard)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _currentTabIndex = 0;
+                  _selectedFilter = 'All';
+                  _searchController.clear();
+                });
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: AppColors.chipBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.arrow_back_rounded,
+                      size: 20,
+                      color: AppColors.primaryDark,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      AppText.of(context, 'back'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            IconButton(
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              icon: const Icon(Icons.menu_rounded, size: 24),
+              color: AppColors.primaryDark,
+              tooltip: 'Authority Menu',
+            ),
+          const SizedBox(width: 8),
           Container(
-            width: 42,
-            height: 42,
-            decoration: const BoxDecoration(
-              color: Color(0xFF134E4A),
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isDashboard ? const Color(0xFF134E4A) : AppColors.primary,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.grid_view_rounded,
+            child: Icon(
+              isDashboard ? Icons.grid_view_rounded : Icons.folder_open_rounded,
               color: Colors.white,
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
-
-          // Title & Subtitle
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +238,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ? AppText.of(context, 'authority_dashboard')
                       : AppText.of(context, 'case_management'),
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryDark,
                     letterSpacing: -0.3,
@@ -201,7 +249,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ? AppText.of(context, 'anti_harassment_committee')
                       : '$totalCount ${isUrdu ? "شکایات" : "complaints"}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11.5,
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w400,
                   ),
@@ -209,8 +257,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ],
             ),
           ),
-
-          // Logout / Exit Button in rounded gray box
           InkWell(
             onTap: () => _confirmLogout(context),
             borderRadius: BorderRadius.circular(12),
@@ -232,8 +278,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
     );
   }
-
-  // --- TAB 1: DASHBOARD TAB (Matches screenshots 1, 4, 5) ---
+  // --- TAB 1: DASHBOARD TAB ---
   Widget _buildDashboardTab(
     BuildContext context,
     List<Map<String, String>> cases,
@@ -241,7 +286,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   ) {
     final isUrdu = AppState.isUrdu.value;
 
-    // Stat counts
     final totalComplaints = cases.length;
     final openCases = cases.where((c) {
       final s = (c['status'] ?? '').toLowerCase();
@@ -251,14 +295,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final highPriority = cases.where((c) => (c['priority'] ?? '').toUpperCase() == 'HIGH').length;
     final activeAlerts = alerts.where((a) => a['status'] == 'Active').length;
 
-    // Status counts
     final countSubmitted = cases.where((c) => (c['status'] ?? '').toLowerCase() == 'submitted').length;
     final countUnderReview = cases.where((c) => (c['status'] ?? '').toLowerCase() == 'under review').length;
     final countInvestigation = cases.where((c) => (c['status'] ?? '').toLowerCase() == 'investigation').length;
     final countResolved = cases.where((c) => (c['status'] ?? '').toLowerCase() == 'resolved').length;
     final countClosed = cases.where((c) => (c['status'] ?? '').toLowerCase() == 'closed').length;
 
-    // Cases needing urgent attention (High priority or Submitted)
     final needsAttention = cases.where((c) {
       final isHigh = (c['priority'] ?? '').toUpperCase() == 'HIGH';
       final isSubmitted = (c['status'] ?? '').toLowerCase() == 'submitted';
@@ -270,34 +312,52 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 2x2 Stats Grid
+          // 2x2 Stats Grid with Colored Frames
           Row(
             children: [
+              // Total Complaints: Theme Blue
               Expanded(
                 child: AdminStatCard(
                   title: AppText.of(context, 'total_complaints'),
                   value: '$totalComplaints',
                   icon: Icons.article_outlined,
-                  iconColor: AppColors.primary,
+                  iconColor: const Color(0xFF2563EB),
+                  borderColor: const Color(0xFF2563EB),
+                  borderWidth: 1.8,
+                  backgroundColor: AppColors.isDark
+                      ? const Color(0xFF131D2E)
+                      : const Color(0xFFF0F7FF),
+                  valueColor: const Color(0xFF1D4ED8),
+                  glowColor: const Color(0xFF2563EB).withValues(alpha: 0.12),
                   onTap: () {
                     setState(() {
                       _currentTabIndex = 1;
                       _selectedFilter = 'All';
+                      _searchController.clear();
                     });
                   },
                 ),
               ),
               const SizedBox(width: 12),
+              // Open Cases: Theme Green
               Expanded(
                 child: AdminStatCard(
                   title: AppText.of(context, 'open_cases'),
                   value: '$openCases',
                   icon: Icons.trending_up_rounded,
-                  iconColor: Colors.teal.shade700,
+                  iconColor: const Color(0xFF16A34A),
+                  borderColor: const Color(0xFF16A34A),
+                  borderWidth: 1.8,
+                  backgroundColor: AppColors.isDark
+                      ? const Color(0xFF11261B)
+                      : const Color(0xFFF0FDF4),
+                  valueColor: const Color(0xFF15803D),
+                  glowColor: const Color(0xFF16A34A).withValues(alpha: 0.12),
                   onTap: () {
                     setState(() {
                       _currentTabIndex = 1;
-                      _selectedFilter = 'Under Review';
+                      _selectedFilter = 'Open';
+                      _searchController.clear();
                     });
                   },
                 ),
@@ -307,39 +367,58 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
+              // High Priority: Orange/Amber border/frame (Stands Out)
               Expanded(
                 child: AdminStatCard(
                   title: AppText.of(context, 'high_priority'),
                   value: '$highPriority',
                   icon: Icons.warning_amber_rounded,
-                  iconColor: AppColors.danger,
+                  iconColor: const Color(0xFFEA580C),
+                  borderColor: const Color(0xFFF59E0B),
+                  borderWidth: 2.4,
+                  backgroundColor: AppColors.isDark
+                      ? const Color(0xFF2C190A)
+                      : const Color(0xFFFFF7ED),
+                  valueColor: const Color(0xFFC2410C),
+                  glowColor: const Color(0xFFF59E0B).withValues(alpha: 0.28),
+                  badgeText: isUrdu ? 'اہم' : 'HIGH',
                   onTap: () {
                     setState(() {
                       _currentTabIndex = 1;
-                      _selectedFilter = 'All';
-                      _searchController.text = 'high';
+                      _selectedFilter = 'High Priority';
+                      _searchController.clear();
                     });
                   },
                 ),
               ),
               const SizedBox(width: 12),
+              // Emergency Alerts: Red border/frame (Stands Out)
               Expanded(
                 child: AdminStatCard(
                   title: AppText.of(context, 'emergency_alerts'),
                   value: '$activeAlerts',
                   icon: Icons.crisis_alert_rounded,
-                  iconColor: AppColors.danger,
+                  iconColor: const Color(0xFFDC2626),
+                  borderColor: const Color(0xFFDC2626),
+                  borderWidth: 2.4,
+                  backgroundColor: AppColors.isDark
+                      ? const Color(0xFF2F1012)
+                      : const Color(0xFFFEF2F2),
+                  valueColor: const Color(0xFFDC2626),
+                  glowColor: const Color(0xFFDC2626).withValues(alpha: 0.32),
+                  badgeText: isUrdu ? 'ایمرجنسی' : 'SOS',
                   onTap: () {
-                    _scaffoldKey.currentState?.openDrawer();
+                    setState(() {
+                      _currentTabIndex = 1;
+                      _selectedFilter = 'Emergency';
+                      _searchController.clear();
+                    });
                   },
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 24),
-
-          // "Cases by status" Section (Matches exact arched pills from screenshots!)
           _buildCasesByStatusSection(
             context,
             submitted: countSubmitted,
@@ -348,15 +427,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             resolved: countResolved,
             closed: countClosed,
           ),
-
           const SizedBox(height: 20),
-
-          // "Harassment types" Section
           _buildHarassmentTypesSection(context, cases),
-
           const SizedBox(height: 24),
-
-          // "Needs attention" Header Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -373,6 +446,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   setState(() {
                     _currentTabIndex = 1;
                     _selectedFilter = 'All';
+                    _searchController.clear();
                   });
                 },
                 child: Row(
@@ -389,8 +463,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
           ),
           const SizedBox(height: 10),
-
-          // Attention cards preview
           if (needsAttention.isEmpty)
             Container(
               width: double.infinity,
@@ -409,10 +481,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             )
           else
             ...needsAttention.map((c) => AdminCaseCard(caseData: c)),
-
           const SizedBox(height: 20),
-
-          // "Recent activity" Footer (From screenshot 4)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -445,8 +514,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
     );
   }
-
-  // --- CASES BY STATUS ARCHED PILLS (Matches Screenshot 1 & 4 & 5) ---
+  // --- CASES BY STATUS ARCHED PILLS ---
   Widget _buildCasesByStatusSection(
     BuildContext context, {
     required int submitted,
@@ -503,6 +571,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         setState(() {
           _currentTabIndex = 1;
           _selectedFilter = statusLabel;
+          _searchController.clear();
         });
       },
       borderRadius: BorderRadius.circular(10),
@@ -510,7 +579,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         width: 58,
         child: Column(
           children: [
-            // Count on top
             Text(
               '$count',
               style: TextStyle(
@@ -520,8 +588,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             const SizedBox(height: 8),
-
-            // Arched dome pill shape in teal (Curved top, flat bottom)
             Container(
               height: 22,
               width: 48,
@@ -534,8 +600,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             const SizedBox(height: 8),
-
-            // Status label
             Text(
               statusLabel,
               textAlign: TextAlign.center,
@@ -554,7 +618,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // --- HARASSMENT TYPES SECTION (Matches Screenshot 4) ---
+  // --- HARASSMENT TYPES SECTION ---
   Widget _buildHarassmentTypesSection(BuildContext context, List<Map<String, String>> cases) {
     final types = [
       'Verbal Harassment',
@@ -630,12 +694,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
     );
   }
+  // --- TAB 2: CASE MANAGEMENT TAB ---
+  Widget _buildCaseManagementTab(
+    BuildContext context,
+    List<Map<String, String>> allCases,
+    List<Map<String, String>> allAlerts,
+  ) {
+    final isUrdu = AppState.isUrdu.value;
+    final activeAlerts = allAlerts.where((a) => a['status'] == 'Active').toList();
 
-  // --- TAB 2: CASE MANAGEMENT TAB (Matches screenshots 2 & 3) ---
-  Widget _buildCaseManagementTab(BuildContext context, List<Map<String, String>> allCases) {
     // Filter by category chip
     var filtered = allCases;
-    if (_selectedFilter != 'All') {
+    if (_selectedFilter == 'Open') {
+      filtered = filtered.where((c) {
+        final s = (c['status'] ?? '').toLowerCase();
+        return s == 'submitted' || s == 'under review' || s == 'investigation';
+      }).toList();
+    } else if (_selectedFilter == 'High Priority') {
+      filtered = filtered.where((c) => (c['priority'] ?? '').toUpperCase() == 'HIGH').toList();
+    } else if (_selectedFilter == 'Emergency') {
+      filtered = filtered.where((c) {
+        final desc = (c['description'] ?? '').toLowerCase();
+        final type = (c['type'] ?? '').toLowerCase();
+        final priority = (c['priority'] ?? '').toUpperCase();
+        return priority == 'HIGH' || desc.contains('emergency') || desc.contains('urgent') || type.contains('physical');
+      }).toList();
+    } else if (_selectedFilter != 'All') {
       filtered = filtered.where((c) {
         return (c['status'] ?? '').toLowerCase() == _selectedFilter.toLowerCase();
       }).toList();
@@ -649,17 +733,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         final type = (c['type'] ?? '').toLowerCase();
         final desc = (c['description'] ?? '').toLowerCase();
         final loc = (c['location'] ?? '').toLowerCase();
+        final priority = (c['priority'] ?? '').toLowerCase();
+        final status = (c['status'] ?? '').toLowerCase();
         return id.contains(_searchQuery) ||
             student.contains(_searchQuery) ||
             type.contains(_searchQuery) ||
             desc.contains(_searchQuery) ||
-            loc.contains(_searchQuery);
+            loc.contains(_searchQuery) ||
+            priority.contains(_searchQuery) ||
+            status.contains(_searchQuery);
       }).toList();
     }
 
     return Column(
       children: [
-        // Search Bar (Rounded with search icon, from screenshot 2 & 3)
+        // Search Bar
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
           child: Container(
@@ -687,7 +775,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ),
 
-        // Horizontal Status Filter Chips (Screenshot 3)
+        // Horizontal Status Filter Chips
         SizedBox(
           height: 44,
           child: ListView.separated(
@@ -699,6 +787,48 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               final filter = _filters[index];
               final isSelected = _selectedFilter.toLowerCase() == filter.toLowerCase();
 
+              Color chipActiveColor = const Color(0xFF0D9488);
+              if (filter == 'Emergency') {
+                chipActiveColor = const Color(0xFFDC2626);
+              } else if (filter == 'High Priority') {
+                chipActiveColor = const Color(0xFFEA580C);
+              } else if (filter == 'Open') {
+                chipActiveColor = const Color(0xFF16A34A);
+              }
+
+              String displayFilter = filter;
+              if (isUrdu) {
+                switch (filter) {
+                  case 'All':
+                    displayFilter = 'تمام';
+                    break;
+                  case 'Open':
+                    displayFilter = 'کھلے کیسز';
+                    break;
+                  case 'High Priority':
+                    displayFilter = 'ہائی پرائرٹی';
+                    break;
+                  case 'Emergency':
+                    displayFilter = 'ایمرجنسی';
+                    break;
+                  case 'Submitted':
+                    displayFilter = 'جمع شدہ';
+                    break;
+                  case 'Under Review':
+                    displayFilter = 'زیر جائزہ';
+                    break;
+                  case 'Investigation':
+                    displayFilter = 'تحقیقات';
+                    break;
+                  case 'Resolved':
+                    displayFilter = 'حل شدہ';
+                    break;
+                  case 'Closed':
+                    displayFilter = 'بند شدہ';
+                    break;
+                }
+              }
+
               return GestureDetector(
                 onTap: () {
                   setState(() {
@@ -709,16 +839,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF0D9488) : AppColors.cardBackground,
+                    color: isSelected ? chipActiveColor : AppColors.cardBackground,
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: isSelected ? const Color(0xFF0D9488) : AppColors.cardBorder,
+                      color: isSelected ? chipActiveColor : AppColors.cardBorder,
                       width: 1.2,
                     ),
                   ),
                   child: Center(
                     child: Text(
-                      filter,
+                      displayFilter,
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -734,26 +864,218 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
         const SizedBox(height: 12),
 
-        // Complaints List / Empty State (Screenshot 2 & 3: "No complaints match this filter.")
+        // Complaints & Emergency Alerts List
         Expanded(
-          child: filtered.isEmpty
-              ? _buildEmptyState(context)
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 20),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    return AdminCaseCard(
-                      caseData: filtered[index],
-                      onStatusUpdated: () => setState(() {}),
-                    );
-                  },
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 20),
+            children: [
+              if (_selectedFilter == 'Emergency') ...[
+                if (activeAlerts.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8, top: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.crisis_alert_rounded, color: Color(0xFFDC2626), size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          isUrdu ? 'لائیو ایمرجنسی ایس او ایس الرٹس' : 'Live Emergency SOS Alerts',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ...activeAlerts.map((a) => _buildEmergencyAlertCard(context, a, isUrdu)),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8, top: 8),
+                    child: Text(
+                      isUrdu ? 'دیگر فوری شکایات' : 'Other Urgent Complaints',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF16A34A).withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF16A34A), size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            isUrdu
+                                ? 'کوئی فعال ایمرجنسی الرٹ نہیں ہے۔ نیچے فوری شکایات ملاحظہ کریں۔'
+                                : 'No active SOS alerts. Showing urgent complaints below.',
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: Color(0xFF16A34A),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+
+              if (filtered.isEmpty && (_selectedFilter != 'Emergency' || activeAlerts.isEmpty))
+                _buildEmptyState(context)
+              else
+                ...filtered.map(
+                  (c) => AdminCaseCard(
+                    caseData: c,
+                    onStatusUpdated: () => setState(() {}),
+                  ),
                 ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  // --- EMPTY STATE CARD (Exact match from screenshot 2 & 3) ---
+  // --- EMERGENCY ALERT CARD IN CASE MANAGEMENT ---
+  Widget _buildEmergencyAlertCard(BuildContext context, Map<String, String> alert, bool isUrdu) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.isDark ? const Color(0xFF2F1012) : const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDC2626), width: 1.8),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.crisis_alert_rounded, color: Color(0xFFDC2626), size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      alert['student'] ?? 'Student',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                    Text(
+                      'ID: ${alert['id'] ?? ''}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.danger,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDC2626),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'LIVE SOS',
+                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textMuted),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  alert['location'] ?? '',
+                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                ),
+              ),
+            ],
+          ),
+          if (alert['phone'] != null && alert['phone']!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.phone_outlined, size: 16, color: AppColors.textMuted),
+                const SizedBox(width: 6),
+                Text(
+                  alert['phone']!,
+                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                alert['time'] ?? '',
+                style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  DataStore.resolveAlert(alert['id'] ?? '');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(isUrdu ? 'الرٹ حل شدہ قرار دے دیا گیا' : 'Alert marked as resolved'),
+                      backgroundColor: const Color(0xFF16A34A),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+                label: Text(isUrdu ? 'حل کریں' : 'Resolve'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF16A34A),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- EMPTY STATE CARD ---
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
@@ -787,7 +1109,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // --- BOTTOM NAVIGATION BAR (Dashboard & Case Management tabs) ---
+  // --- BOTTOM NAVIGATION BAR ---
   Widget _buildBottomNavigation(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
