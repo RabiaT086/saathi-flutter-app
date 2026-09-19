@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
-import '../data_store.dart';
+import '../services/supabase_service.dart';
 
 class AdminCaseCard extends StatelessWidget {
   final Map<String, String> caseData;
@@ -180,7 +180,7 @@ class AdminCaseCard extends StatelessWidget {
                       height: 48,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          DataStore.updateCaseStatus(
+                          SupabaseService.updateCaseStatus(
                             caseId,
                             selectedStatus,
                             remark: remarksController.text,

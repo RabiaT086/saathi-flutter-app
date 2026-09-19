@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../services/supabase_service.dart';
 import 'admin_dashboard_screen.dart';
 
 class AdminLoginScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
   final loginPasswordController = TextEditingController();
   final loginAuthorityIdController = TextEditingController();
   bool loginPasswordHidden = true;
+  bool isLoggingIn = false;
 
   // Sign up fields
   final signupNameController = TextEditingController();
@@ -27,6 +29,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
   final signupConfirmController = TextEditingController();
   bool signupPasswordHidden = true;
   bool signupConfirmHidden = true;
+  bool isSigningUp = false;
+
+  final emailRegex = RegExp(r'^[\w\.-]+@[\w-]+\.[a-zA-Z]{2,}\$');
 
   @override
   void initState() {
@@ -49,41 +54,141 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
     super.dispose();
   }
 
-  void handleLogin() {
-    if (loginEmailController.text.trim().isEmpty ||
-        loginPasswordController.text.trim().isEmpty ||
-        loginAuthorityIdController.text.trim().isEmpty) {
+  Future<void> handleLogin() async {
+    final email = loginEmailController.text.trim();
+    final password = loginPasswordController.text.trim();
+    final authId = loginAuthorityIdController.text.trim();
+
+    if (authId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill Email, Password and Authority ID.')),
+        const SnackBar(content: Text('Please enter your Authority ID.')),
       );
       return;
     }
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
-    );
+
+    if (email.isEmpty || !emailRegex.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid official email.')),
+      );
+      return;
+    }
+
+    if (password.isEmpty || password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters.')),
+      );
+      return;
+    }
+
+    setState(() => isLoggingIn = true);
+
+    try {
+      final res = await SupabaseService.signInAdmin(
+        email: email,
+        password: password,
+        authorityId: authId,
+      );
+
+      if (!mounted) return;
+
+      if (res['success'] == true) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message'] ?? 'Admin authentication failed.'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.danger),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoggingIn = false);
+      }
+    }
   }
 
-  void handleSignup() {
-    if (signupNameController.text.trim().isEmpty ||
-        signupEmailController.text.trim().isEmpty ||
-        signupAuthorityIdController.text.trim().isEmpty ||
-        signupPasswordController.text.trim().isEmpty) {
+  Future<void> handleSignup() async {
+    final name = signupNameController.text.trim();
+    final email = signupEmailController.text.trim();
+    final authId = signupAuthorityIdController.text.trim();
+    final dept = signupDeptController.text.trim();
+    final password = signupPasswordController.text.trim();
+    final confirm = signupConfirmController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || authId.isEmpty || dept.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all required fields.')),
       );
       return;
     }
-    if (signupPasswordController.text != signupConfirmController.text) {
+
+    if (!emailRegex.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid official email.')),
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters long.')),
+      );
+      return;
+    }
+
+    if (password != confirm) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Passwords do not match.')),
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Authority account created. Please log in.')),
-    );
-    tabController.animateTo(0);
+
+    setState(() => isSigningUp = true);
+
+    try {
+      final res = await SupabaseService.signUpStudent(
+        email: email,
+        password: password,
+        fullName: name,
+        universityId: authId,
+      );
+
+      if (!mounted) return;
+
+      if (res['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Authority account created successfully. Please log in.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        tabController.animateTo(0);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Registration failed.'), backgroundColor: AppColors.danger),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.danger),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isSigningUp = false);
+      }
+    }
   }
 
   void showForgotPassword() {
@@ -161,7 +266,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
               const SizedBox(height: 20),
 
               SizedBox(
-                height: 480,
+                height: 520,
                 child: TabBarView(
                   controller: tabController,
                   physics: const NeverScrollableScrollPhysics(),
@@ -170,35 +275,49 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                     SingleChildScrollView(
                       child: Column(
                         children: [
-                        TextField(controller: loginAuthorityIdController, decoration: fieldDecoration('Authority ID')),
-                        const SizedBox(height: 12),
-                        TextField(controller: loginEmailController, decoration: fieldDecoration('Official Email')),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: loginPasswordController,
-                          obscureText: loginPasswordHidden,
-                          decoration: fieldDecoration(
-                            'Password',
-                            suffixIcon: IconButton(
-                              icon: Icon(loginPasswordHidden ? Icons.visibility_off : Icons.visibility, color: AppColors.textMuted),
-                              onPressed: () => setState(() => loginPasswordHidden = !loginPasswordHidden),
+                          TextField(controller: loginAuthorityIdController, decoration: fieldDecoration('Authority ID')),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: loginEmailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: fieldDecoration('Official Email'),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: loginPasswordController,
+                            obscureText: loginPasswordHidden,
+                            decoration: fieldDecoration(
+                              'Password',
+                              suffixIcon: IconButton(
+                                icon: Icon(loginPasswordHidden ? Icons.visibility_off : Icons.visibility, color: AppColors.textMuted),
+                                onPressed: () => setState(() => loginPasswordHidden = !loginPasswordHidden),
+                              ),
                             ),
                           ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(onPressed: showForgotPassword, child: const Text('Forgot password?')),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: handleLogin,
-                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                            child: const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(onPressed: showForgotPassword, child: const Text('Forgot password?')),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: isLoggingIn ? null : handleLogin,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: isLoggingIn
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                    )
+                                  : const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -211,7 +330,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                           const SizedBox(height: 12),
                           TextField(controller: signupAuthorityIdController, decoration: fieldDecoration('Authority ID')),
                           const SizedBox(height: 12),
-                          TextField(controller: signupEmailController, decoration: fieldDecoration('Official Email')),
+                          TextField(
+                            controller: signupEmailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: fieldDecoration('Official Email'),
+                          ),
                           const SizedBox(height: 12),
                           TextField(controller: signupDeptController, decoration: fieldDecoration('Department / Designation')),
                           const SizedBox(height: 12),
@@ -243,9 +366,19 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton(
-                              onPressed: handleSignup,
-                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                              child: const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              onPressed: isSigningUp ? null : handleSignup,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: isSigningUp
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                    )
+                                  : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                             ),
                           ),
                         ],
