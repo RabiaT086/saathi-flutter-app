@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'app_state.dart';
 import 'theme/app_colors.dart';
 import 'screens/welcome_screen.dart';
-
-void main() {
+import 'package:supabase_flutter/supabase_flutter.dart';
+Future<void> main() async {
+  await Supabase.initialize(
+    url: 'https://cvpfdgyccgponvyastub.supabase.co',
+    anonKey: 'sb_publishable_xebqc_1uYKC4_BBmedIqtg_AK_DA6eM',
+  );
   runApp(const SaathiApp());
 }
-
 class SaathiApp extends StatelessWidget {
   const SaathiApp({super.key});
 
