@@ -26,8 +26,8 @@ class _SignupScreenState extends State<SignupScreen> {
   bool obscureConfirmPassword = true;
   bool _isLoading = false;
 
-  final emailRegex = RegExp(r'^[\w\.-]+@[\w-]+\.[a-zA-Z]{2,}\$');
-  final phoneRegex = RegExp(r'^(?:\+92|0092|0)?3[0-9]{9}\$');
+  final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
+  final phoneRegex = RegExp(r'^(?:\+92|0092|0)?3[0-9]{9}$');
 
   @override
   void dispose() {

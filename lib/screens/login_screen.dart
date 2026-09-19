@@ -21,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool obscurePassword = true;
   bool _isLoading = false;
 
-  final emailRegex = RegExp(r'^[\w\.-]+@[\w-]+\.[a-zA-Z]{2,}\$');
+  final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
 
   Future<void> login() async {
     final email = emailController.text.trim();

@@ -31,12 +31,15 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> with SingleTickerPr
   bool signupConfirmHidden = true;
   bool isSigningUp = false;
 
-  final emailRegex = RegExp(r'^[\w\.-]+@[\w-]+\.[a-zA-Z]{2,}\$');
+  final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
 
   @override
   void initState() {
     super.initState();
     tabController = TabController(length: 2, vsync: this);
+    loginEmailController.text = 'admin@fuuast.edu.pk';
+    loginAuthorityIdController.text = 'AUTH-7821';
+    loginPasswordController.text = 'admin123';
   }
 
   @override
