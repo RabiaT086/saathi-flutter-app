@@ -25,6 +25,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
+  bool _isLoading = false;
+final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
 
   void createAccount() async {
     final name = nameController.text.trim();
