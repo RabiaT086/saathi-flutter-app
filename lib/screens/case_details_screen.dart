@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 import 'evidence_vault_screen.dart';
 
 class CaseTimelineEntry {
@@ -50,11 +51,14 @@ class CaseDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -80,7 +84,7 @@ class CaseDetailsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(caseId, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                        const Text('Case details', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text(AppText.of(context, 'case_details'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -92,7 +96,7 @@ class CaseDetailsScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
@@ -102,7 +106,7 @@ class CaseDetailsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(type, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+                        Text(type, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(color: AppColors.chipBackground, borderRadius: BorderRadius.circular(20)),
@@ -115,9 +119,9 @@ class CaseDetailsScreen extends StatelessWidget {
                     _infoRow(Icons.location_on_outlined, location),
                     _infoRow(Icons.priority_high_rounded, '$priority priority'),
                     const Divider(height: 24, color: AppColors.cardBorder),
-                    const Text('Description', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+                    Text(AppText.of(context, 'description'), style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
                     const SizedBox(height: 6),
-                    Text(description, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    Text(description, style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                   ],
                 ),
               ),
@@ -126,12 +130,12 @@ class CaseDetailsScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Evidence', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+                  Text(AppText.of(context, 'evidence'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
                   TextButton(
                     onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const EvidenceVaultScreen()));
                     },
-                    child: const Text('View all', style: TextStyle(color: AppColors.primary)),
+                    child: Text(AppText.of(context, 'view_all'), style: const TextStyle(color: AppColors.primary)),
                   ),
                 ],
               ),
@@ -139,7 +143,7 @@ class CaseDetailsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
@@ -151,8 +155,8 @@ class CaseDetailsScreen extends StatelessWidget {
                       child: const Icon(Icons.folder_special_outlined, color: AppColors.primary),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text('2 files linked to this case', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
+                    Expanded(
+                      child: Text('2 ${AppText.of(context, 'files_linked')}', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
                     ),
                     const Icon(Icons.chevron_right, color: AppColors.textMuted),
                   ],
@@ -160,12 +164,12 @@ class CaseDetailsScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 20),
-              const Text('Case timeline', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+              Text(AppText.of(context, 'case_timeline'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
@@ -220,6 +224,8 @@ class CaseDetailsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+      },
     );
   }
 

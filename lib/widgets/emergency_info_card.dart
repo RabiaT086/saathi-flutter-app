@@ -19,7 +19,7 @@ class EmergencyInfoCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.cardBorder),
       ),

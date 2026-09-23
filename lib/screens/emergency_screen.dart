@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import '../services/location_service.dart';
+import '../services/supabase_service.dart';
 
 class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
@@ -12,20 +14,76 @@ class EmergencyScreen extends StatefulWidget {
 class _EmergencyScreenState extends State<EmergencyScreen> {
   bool emergencyActive = false;
 
+  final messageController = TextEditingController(
+    text: "I'm not feeling safe. Please track me through my location — I've shared it with you.",
+  );
+
   final List<Map<String, String>> notifyList = const [
     {'name': 'Rabia Tabassum', 'detail': 'Sister · +92 301 7654321'},
     {'name': 'Campus Security Office', 'detail': 'University · +92 21 99261300'},
     {'name': 'Anti-Harassment Committee', 'detail': 'Authorised university authority'},
   ];
 
-  void activateEmergency() {
+  @override
+  void dispose() {
+    messageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> activateEmergency() async {
     setState(() {
       emergencyActive = true;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Emergency alert sent. Your location and evidence recording have started.'),
-        backgroundColor: AppColors.danger,
+
+    final loc = await LocationService.getCurrentLocation();
+    final placeholderLocation = loc.readableLocation;
+    await SupabaseService.triggerEmergencyAlert(
+      student: 'Student Alert',
+      location: loc.readableLocation,
+      phone: '+92 301 7654321',
+      mapsUrl: loc.mapsUrl,
+    );
+    if (!mounted) return;
+    final now = DateTime.now();
+    final timeText = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Emergency Alert Sent'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('"${messageController.text}"', style: const TextStyle(fontStyle: FontStyle.italic)),
+              const SizedBox(height: 12),
+              Row(children: [
+                const Icon(Icons.location_on_outlined, size: 16, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Expanded(child: Text(placeholderLocation, style: TextStyle(fontSize: 13))),
+              ]),
+              const SizedBox(height: 6),
+              Row(children: [
+                const Icon(Icons.access_time, size: 16, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Text(timeText, style: const TextStyle(fontSize: 13)),
+              ]),
+              const SizedBox(height: 12),
+              const Text(
+                'Sent to: Rabia Tabassum (Sister), Campus Security Office, Anti-Harassment Committee.',
+                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }
@@ -41,9 +99,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -79,7 +137,34 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
+
+              // Editable emergency message
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Message to send', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: messageController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: AppColors.cardBackground,
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'This message + your live location will be sent to your emergency contacts.',
+                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                ),
+              ),
+
+              const SizedBox(height: 25),
               Text(
                 emergencyActive ? 'Emergency alert active' : AppText.of(context, 'press_hold_sos'),
                 textAlign: TextAlign.center,
@@ -123,7 +208,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.cardBorder),
                 ),

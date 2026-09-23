@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import '../services/supabase_service.dart';
 import 'forgot_password_screen.dart';
 import 'signup_screen.dart';
 import 'main_shell.dart';
 import 'admin_dashboard_screen.dart';
+import 'admin_login_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,6 +21,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
 
   bool obscurePassword = true;
+  bool _isLoading = false;
+
+  final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
 
   void login() async {
     final email = emailController.text.trim();
@@ -56,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void loginAsAdmin() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+      MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
     );
   }
 

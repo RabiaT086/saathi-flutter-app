@@ -9,6 +9,7 @@ import 'report_screen.dart';
 import 'my_cases_screen.dart';
 import 'evidence_vault_screen.dart';
 import 'case_details_screen.dart';
+import 'know_your_rights_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback? onOpenAIAssistant;
@@ -28,11 +29,11 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(radius: 16, backgroundColor: fg.withOpacity(0.15), child: Icon(icon, color: fg, size: 18)),
+              CircleAvatar(radius: 16, backgroundColor: fg.withValues(alpha: 0.15), child: Icon(icon, color: fg, size: 18)),
               const SizedBox(height: 10),
               Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: fg)),
               const SizedBox(height: 3),
-              Text(subtitle, style: TextStyle(fontSize: 11, color: fg.withOpacity(0.8))),
+              Text(subtitle, style: TextStyle(fontSize: 11, color: fg.withValues(alpha: 0.8))),
             ],
           ),
         ),
@@ -46,7 +47,7 @@ class HomeScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.cardBorder),
         ),
@@ -87,9 +88,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, _, __) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(),
@@ -155,9 +156,11 @@ class HomeScreen extends StatelessWidget {
                   icon: Icons.balance_outlined,
                   title: AppText.of(context, 'know_your_rights'),
                   subtitle: 'Protection Against Harassment Act 2010',
-                  bg: Colors.white,
+                  bg: AppColors.cardBackground,
                   fg: AppColors.primaryDark,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const KnowYourRightsScreen()));
+                  },
                 ),
               ],
             ),
@@ -183,7 +186,7 @@ class HomeScreen extends StatelessWidget {
                 _gridCard(context, icon: Icons.folder_special_outlined, title: AppText.of(context, 'evidence_vault'), onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const EvidenceVaultScreen()));
                 }),
-                _gridCard(context, icon: Icons.smart_toy_outlined, title: 'AI Assistant', onTap: () {
+                _gridCard(context, icon: Icons.smart_toy_outlined, title: AppText.of(context, 'ai_assistant'), onTap: () {
                   onOpenAIAssistant?.call();
                 }),
                 _gridCard(context, icon: Icons.contacts_outlined, title: AppText.of(context, 'emergency_contact'), onTap: () => _showContactsSheet(context)),
@@ -197,7 +200,7 @@ class HomeScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.cardBorder),
               ),
@@ -228,12 +231,12 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 10),
             ValueListenableBuilder<List<Map<String, String>>>(
               valueListenable: DataStore.cases,
-              builder: (context, cases, __) {
+              builder: (context, cases, _) {
                 if (cases.isEmpty) {
                   return Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.cardBackground,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.cardBorder),
                     ),
@@ -261,7 +264,7 @@ class HomeScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.cardBackground,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.cardBorder),
                     ),
@@ -327,7 +330,7 @@ class HomeScreen extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.cardBackground,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: AppColors.cardBorder),
                     ),

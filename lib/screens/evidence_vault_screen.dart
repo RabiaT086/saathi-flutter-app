@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../app_state.dart';
 
 class EvidenceVaultScreen extends StatefulWidget {
   const EvidenceVaultScreen({super.key});
@@ -21,8 +22,11 @@ class _EvidenceVaultScreenState extends State<EvidenceVaultScreen> {
   Widget build(BuildContext context) {
     final filtered = selectedFilter == 'All' ? files : files.where((f) => f['type'] == selectedFilter).toList();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -49,8 +53,8 @@ class _EvidenceVaultScreenState extends State<EvidenceVaultScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Evidence vault', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('${files.length} secured files', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text(AppText.of(context, 'evidence_vault'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('${files.length} ${AppText.of(context, 'secured_files')}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -62,13 +66,13 @@ class _EvidenceVaultScreenState extends State<EvidenceVaultScreen> {
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(color: AppColors.chipBackground, borderRadius: BorderRadius.circular(12)),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.lock_outline, size: 16, color: AppColors.primary),
-                    SizedBox(width: 8),
+                    const Icon(Icons.lock_outline, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Files are encrypted at rest and only visible to you and the Anti-Harassment Committee handling your case.',
+                        AppText.of(context, 'evidence_encryption_notice'),
                         style: TextStyle(fontSize: 11, color: AppColors.primaryDark),
                       ),
                     ),
@@ -107,7 +111,7 @@ class _EvidenceVaultScreenState extends State<EvidenceVaultScreen> {
             const SizedBox(height: 16),
             Expanded(
               child: filtered.isEmpty
-                  ? const Center(child: Text('No files in this category yet', style: TextStyle(color: AppColors.textMuted)))
+                  ? Center(child: Text(AppText.of(context, 'no_files_category'), style: const TextStyle(color: AppColors.textMuted)))
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: filtered.length,
@@ -117,7 +121,7 @@ class _EvidenceVaultScreenState extends State<EvidenceVaultScreen> {
                         return Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.cardBackground,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: AppColors.cardBorder),
                           ),
@@ -133,7 +137,7 @@ class _EvidenceVaultScreenState extends State<EvidenceVaultScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(file['name']!, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
+                                    Text(file['name']!, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
                                     Text('${file['size']} · ${file['date']}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
                                   ],
                                 ),
@@ -148,6 +152,8 @@ class _EvidenceVaultScreenState extends State<EvidenceVaultScreen> {
           ],
         ),
       ),
+    );
+      },
     );
   }
 }
