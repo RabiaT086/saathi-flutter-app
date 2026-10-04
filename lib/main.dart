@@ -3,12 +3,15 @@ import 'app_state.dart';
 import 'theme/app_colors.dart';
 import 'screens/welcome_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'data_store.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
     url: 'https://cvpfdgyccgponvyastub.supabase.co',
     publishableKey:  'sb_publishable_xebqc_1uYKC4_BBmedIqtg_AK_DA6eM',
   );
+  DataStore.loadFromSupabase();
   runApp(const SaathiApp());
 }
 class SaathiApp extends StatelessWidget {

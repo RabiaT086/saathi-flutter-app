@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// In-memory data store for Saathi.
 /// Powers both student reporting and the Anti-Harassment Authority Dashboard.
@@ -105,6 +106,57 @@ class DataStore {
       updated['status'] = 'Resolved';
       list[idx] = updated;
       emergencyAlerts.value = list;
+    }
+  }
+
+  static Future<void> loadFromSupabase() async {
+    try {
+      final client = Supabase.instance.client;
+
+      final complaintsData = await client
+          .from('complaints')
+          .select()
+          .order('created_at', ascending: false);
+
+      final loadedCases = (complaintsData as List).map((row) {
+        return {
+          'id': (row['case_id'] ?? '').toString(),
+          'student': (row['student'] ?? 'Confidential Student (FUUAST)').toString(),
+          'type': (row['harassment_type'] ?? '').toString(),
+          'date': (row['incident_date'] ?? '').toString(),
+          'description': (row['description'] ?? '').toString(),
+          'priority': (row['priority'] ?? 'MEDIUM').toString(),
+          'status': (row['status'] ?? 'Submitted').toString(),
+          'location': (row['location'] ?? '').toString(),
+          if (row['remark'] != null) 'remark': row['remark'].toString(),
+        };
+      }).toList().cast<Map<String, String>>();
+
+      if (loadedCases.isNotEmpty) {
+        cases.value = loadedCases;
+      }
+
+      final alertsData = await client
+          .from('emergency_alerts')
+          .select()
+          .order('created_at', ascending: false);
+
+      final loadedAlerts = (alertsData as List).map((row) {
+        return {
+          'id': (row['alert_id'] ?? '').toString(),
+          'student': (row['student_name'] ?? '').toString(),
+          'location': (row['location_text'] ?? '').toString(),
+          'time': (row['created_at'] ?? '').toString(),
+          'status': (row['status'] ?? 'Active').toString(),
+          'phone': (row['phone'] ?? '').toString(),
+        };
+      }).toList().cast<Map<String, String>>();
+
+      if (loadedAlerts.isNotEmpty) {
+        emergencyAlerts.value = loadedAlerts;
+      }
+    } catch (e) {
+      debugPrint('Load from Supabase failed: $e');
     }
   }
 }
