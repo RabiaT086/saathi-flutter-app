@@ -52,7 +52,9 @@ class _AppDrawerState extends State<AppDrawer> {
       trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
       onTap: () {
         Navigator.pop(context);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => InfoPageScreen(title: title, content: content)));
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(builder: (context) => InfoPageScreen(title: title, content: content)),
+        );
       },
     );
   }

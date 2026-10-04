@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../widgets/app_drawer.dart';
 import '../app_state.dart';
 import '../data_store.dart';
 import 'welcome_screen.dart';
@@ -114,6 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             return Scaffold(
               backgroundColor: AppColors.background,
+              drawer: const AppDrawer(),
               body: SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -134,15 +136,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: Row(
                           children: [
-                            IconButton(
-                              onPressed: () {
-                                if (widget.onBackToHome != null) {
-                                  widget.onBackToHome!();
-                                } else if (Navigator.canPop(context)) {
-                                  Navigator.pop(context);
-                                }
-                              },
-                              icon: const Icon(Icons.arrow_back, color: Colors.white),
+                            Builder(
+                              builder: (scaffoldContext) => IconButton(
+                                onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
+                                icon: const Icon(Icons.menu, color: Colors.white),
+                                tooltip: 'Menu',
+                              ),
                             ),
                             const SizedBox(width: 4),
                             Column(

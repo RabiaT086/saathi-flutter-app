@@ -179,30 +179,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: AppColors.chipBackground,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.arrow_back_rounded,
-                      size: 20,
-                      color: AppColors.primaryDark,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      AppText.of(context, 'back'),
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primaryDark,
-                      ),
-                    ),
-                  ],
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  size: 20,
+                  color: AppColors.primaryDark,
                 ),
               ),
             )
