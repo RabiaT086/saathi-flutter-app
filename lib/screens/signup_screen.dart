@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
+﻿import '../data_store.dart';
+import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
-import '../services/supabase_service.dart';
 import 'login_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -74,6 +74,19 @@ final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
     }
 
     try {
+      DataStore.updateProfile(
+        name: name,
+        email: email,
+        universityId: universityId,
+      );
+      if (emergencyName.isNotEmpty && emergencyNumber.isNotEmpty) {
+        DataStore.addEmergencyContact(
+          name: emergencyName,
+          relation: 'Guardian / Contact',
+          phone: emergencyNumber,
+        );
+      }
+
       await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,

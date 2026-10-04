@@ -1,14 +1,17 @@
 ﻿import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import '../services/shake_detection_service.dart';
 import 'home_screen.dart';
 import 'chat_screen.dart';
 import 'profile_screen.dart';
+import 'emergency_screen.dart';
 
 /// Wraps the three main tabs (Home, AI Assistant, Profile) behind a single
 /// persistent bottom navigation bar. Uses a nested Navigator for the Home
 /// tab so sub-screens (My Cases, Report, Emergency, etc.) keep the bottom
 /// navigation bar visible at all times.
+/// Also hosts the Phone Shake Detector (FR-04) for immediate emergency triggering.
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -19,6 +22,29 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int currentIndex = 0;
   final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Start listening for shake events across the student shell
+    ShakeDetectionService.startListening(
+      onShakeTriggered: () {
+        if (!mounted) return;
+        // Navigate or pop to emergency screen with automatic trigger
+        homeNavigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => const EmergencyScreen(autoTriggerFromShake: true),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    ShakeDetectionService.stopListening();
+    super.dispose();
+  }
 
   void goToTab(int index) {
     if (index == currentIndex && index == 0) {

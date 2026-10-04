@@ -1,3 +1,4 @@
+﻿import '../data_store.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../theme/app_colors.dart';
@@ -173,6 +174,35 @@ class _ReportScreenState extends State<ReportScreen> {
         additionalInfo: additionalInfoController.text.trim(),
         files: _attachedFiles,
       );
+
+      // Register attached files directly into the Evidence Vault
+      for (final file in _attachedFiles) {
+        final ext = file.extension?.toLowerCase() ?? '';
+        String fType = 'Document';
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {
+          fType = 'Image';
+        } else if (['mp4', 'mov', 'avi', 'mkv'].contains(ext)) {
+          fType = 'Video';
+        } else if (['mp3', 'm4a', 'wav', 'aac'].contains(ext)) {
+          fType = 'Audio';
+        }
+
+        int sizeBytes = 0;
+        try {
+          sizeBytes = await file.xFile.length();
+        } catch (_) {}
+        final sizeStr = sizeBytes > 1024 * 1024
+            ? ' MB'
+            : ' KB';
+
+        DataStore.addEvidenceFile(
+          name: file.name,
+          size: sizeStr,
+          caseId: newId,
+          type: fType,
+          path: file.path ?? '',
+        );
+      }
 
       if (!mounted) return;
 

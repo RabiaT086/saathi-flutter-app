@@ -1,11 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
-import '../services/supabase_service.dart';
 import 'forgot_password_screen.dart';
 import 'signup_screen.dart';
 import 'main_shell.dart';
-import 'admin_dashboard_screen.dart';
 import 'admin_login_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
