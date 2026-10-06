@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
-import '../screens/info_page_screen.dart';
+import '../screens/info_page_screen.dart' show privacyPolicyContent, helpFaqsContent, aboutUsContent;
 
 /// Real sliding sidebar (Flutter's Drawer already closes on outside tap
 /// and supports swipe-to-close). Holds Language, Theme, Notification
@@ -50,12 +50,37 @@ class _AppDrawerState extends State<AppDrawer> {
       leading: Icon(icon, color: AppColors.primary),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
       trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
-      onTap: () {
-        Navigator.pop(context);
-        Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(builder: (context) => InfoPageScreen(title: title, content: content)),
-        );
-      },
+      onTap: () => _showInfoDialog(context, title, content),
+    );
+  }
+
+  // Matches the Admin Drawer's popup pattern (e.g. HEC Guidelines dialog):
+  // close the drawer, then show the content as an AlertDialog instead of
+  // navigating to a new screen.
+  void _showInfoDialog(BuildContext context, String title, String content) {
+    Navigator.pop(context); // close drawer
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark),
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            content,
+            style: const TextStyle(fontSize: 13.5, color: AppColors.textSecondary, height: 1.5),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 
