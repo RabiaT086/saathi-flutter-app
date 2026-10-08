@@ -35,10 +35,12 @@ class NotificationsScreen extends StatelessWidget {
 
   void _openCase(BuildContext context, String caseId) {
     final caseList = DataStore.cases.value;
+
     final match = caseList.firstWhere(
       (c) => c['id'] == caseId,
       orElse: () => {},
     );
+
     if (match.isNotEmpty) {
       Navigator.push(
         context,
@@ -65,7 +67,8 @@ class NotificationsScreen extends StatelessWidget {
         return ValueListenableBuilder<List<Map<String, dynamic>>>(
           valueListenable: DataStore.notifications,
           builder: (context, notifications, _) {
-            final unreadCount = notifications.where((n) => n['isRead'] == false).length;
+            final unreadCount =
+                notifications.where((n) => n['isRead'] == false).length;
 
             return Scaffold(
               backgroundColor: AppColors.background,
@@ -80,7 +83,10 @@ class NotificationsScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [AppColors.primaryDark, AppColors.primary],
+                            colors: [
+                              AppColors.primaryDark,
+                              AppColors.primary,
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -90,7 +96,10 @@ class NotificationsScreen extends StatelessWidget {
                           children: [
                             IconButton(
                               onPressed: () => Navigator.pop(context),
-                              icon: const Icon(Icons.arrow_back, color: Colors.white),
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                              ),
                             ),
                             const SizedBox(width: 4),
                             Column(
@@ -98,13 +107,20 @@ class NotificationsScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   AppText.of(context, 'notifications'),
-                                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 Text(
                                   unreadCount == 0
                                       ? 'All caught up'
                                       : '$unreadCount unread notification${unreadCount > 1 ? "s" : ""}',
-                                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ],
                             ),
@@ -115,7 +131,10 @@ class NotificationsScreen extends StatelessWidget {
                                   DataStore.clearNotifications();
                                 },
                                 tooltip: 'Clear All',
-                                icon: const Icon(Icons.delete_sweep_outlined, color: Colors.white70),
+                                icon: const Icon(
+                                  Icons.delete_sweep_outlined,
+                                  color: Colors.white70,
+                                ),
                               ),
                           ],
                         ),
@@ -129,45 +148,80 @@ class NotificationsScreen extends StatelessWidget {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.notifications_none_rounded, size: 60, color: AppColors.primary),
+                                  const Icon(
+                                    Icons.notifications_none_rounded,
+                                    size: 60,
+                                    color: AppColors.primary,
+                                  ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    AppText.of(context, 'no_notifications'),
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryDark),
+                                    AppText.of(
+                                      context,
+                                      'no_notifications',
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primaryDark,
+                                    ),
                                   ),
                                   const SizedBox(height: 6),
                                   const Text(
                                     'Case status changes and alerts will appear here.',
-                                    style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textMuted,
+                                    ),
                                   ),
                                 ],
                               ),
                             )
                           : ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               itemCount: notifications.length,
-                              separatorBuilder: (context, _) => const SizedBox(height: 10),
+                              separatorBuilder: (context, _) =>
+                                  const SizedBox(height: 10),
                               itemBuilder: (context, index) {
                                 final notif = notifications[index];
                                 final type = notif['type']?.toString();
                                 final caseId = notif['caseId']?.toString();
                                 final isRead = notif['isRead'] == true;
 
+                                final notificationColor =
+                                    _getColorForType(type);
+
                                 return Card(
                                   elevation: 0,
-                                  color: isRead ? AppColors.cardBackground : Colors.white,
+                                  color: isRead
+                                      ? AppColors.cardBackground
+                                      : Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
                                     side: BorderSide(
-                                      color: isRead ? AppColors.cardBorder : AppColors.primary.withOpacity(0.4),
+                                      color: isRead
+                                          ? AppColors.cardBorder
+                                          : AppColors.primary
+                                              .withValues(alpha: 0.4),
                                       width: isRead ? 1 : 1.5,
                                     ),
                                   ),
                                   child: ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
                                     leading: CircleAvatar(
-                                      backgroundColor: _getColorForType(type).withOpacity(0.12),
-                                      child: Icon(_getIconForType(type), color: _getColorForType(type), size: 20),
+                                      backgroundColor: notificationColor
+                                          .withValues(alpha: 0.12),
+                                      child: Icon(
+                                        _getIconForType(type),
+                                        color: notificationColor,
+                                        size: 20,
+                                      ),
                                     ),
                                     title: Row(
                                       children: [
@@ -175,7 +229,9 @@ class NotificationsScreen extends StatelessWidget {
                                           child: Text(
                                             notif['title'] ?? '',
                                             style: TextStyle(
-                                              fontWeight: isRead ? FontWeight.w600 : FontWeight.bold,
+                                              fontWeight: isRead
+                                                  ? FontWeight.w600
+                                                  : FontWeight.bold,
                                               fontSize: 14,
                                               color: AppColors.primaryDark,
                                             ),
@@ -183,37 +239,62 @@ class NotificationsScreen extends StatelessWidget {
                                         ),
                                         Text(
                                           notif['time'] ?? '',
-                                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.textMuted,
+                                          ),
                                         ),
                                       ],
                                     ),
                                     subtitle: Padding(
                                       padding: const EdgeInsets.only(top: 6),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             notif['message'] ?? '',
-                                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.3),
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color:
+                                                  AppColors.textSecondary,
+                                              height: 1.3,
+                                            ),
                                           ),
-                                          if (caseId != null && caseId.isNotEmpty)
+                                          if (caseId != null &&
+                                              caseId.isNotEmpty)
                                             Padding(
-                                              padding: const EdgeInsets.only(top: 8),
+                                              padding:
+                                                  const EdgeInsets.only(
+                                                top: 8,
+                                              ),
                                               child: InkWell(
-                                                onTap: () => _openCase(context, caseId),
+                                                onTap: () => _openCase(
+                                                  context,
+                                                  caseId,
+                                                ),
                                                 child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   children: [
                                                     Text(
                                                       'View Case ($caseId)',
-                                                      style: const TextStyle(
+                                                      style:
+                                                          const TextStyle(
                                                         fontSize: 12,
-                                                        color: AppColors.primary,
-                                                        fontWeight: FontWeight.bold,
+                                                        color: AppColors
+                                                            .primary,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                     const SizedBox(width: 4),
-                                                    const Icon(Icons.arrow_forward_ios, size: 10, color: AppColors.primary),
+                                                    const Icon(
+                                                      Icons
+                                                          .arrow_forward_ios,
+                                                      size: 10,
+                                                      color: AppColors.primary,
+                                                    ),
                                                   ],
                                                 ),
                                               ),

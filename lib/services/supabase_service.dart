@@ -83,7 +83,7 @@ class SupabaseService {
   }) async {
     try {
       if (client == null) {
-        return {'success': true, 'message': 'Admin login successful.'};
+        return {'success': false, 'message': 'Service unavailable.'};
       }
       final response = await client!.auth.signInWithPassword(
         email: email,
@@ -92,10 +92,12 @@ class SupabaseService {
       if (response.user != null) {
         return {'success': true, 'user': response.user};
       }
-      return {'success': true, 'message': 'Admin login successful (Demo Mode).'};
+      return {'success': false, 'message': 'Invalid email or password.'};
+    } on AuthException catch (e) {
+      return {'success': false, 'message': e.message};
     } catch (e) {
-      debugPrint('Admin Auth demo fallback: $e');
-      return {'success': true, 'message': 'Admin login successful (Demo Mode).'};
+      debugPrint('Admin sign-in error: $e');
+      return {'success': false, 'message': 'Login failed. Please try again.'};
     }
   }
 
