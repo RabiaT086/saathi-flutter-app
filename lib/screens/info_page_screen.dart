@@ -15,10 +15,6 @@ class InfoPageScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
         title: Text(title, style: const TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(

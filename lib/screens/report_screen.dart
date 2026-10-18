@@ -1,9 +1,11 @@
-﻿import '../data_store.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
 import '../services/supabase_service.dart';
+import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
+import '../services/storage_service.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -79,13 +81,14 @@ class _ReportScreenState extends State<ReportScreen> {
 
   Future<void> _pickFiles(FileType type, [List<String>? extensions]) async {
     try {
-      final files = await FilePicker.pickFiles(
+      final result = await FilePicker.platform.pickFiles(
         type: type,
         allowedExtensions: extensions,
+        allowMultiple: true,
       );
-      if (files.isNotEmpty) {
+      if (result != null && result.files.isNotEmpty) {
         setState(() {
-          for (final file in files) {
+          for (final file in result.files) {
             if (!_attachedFiles.any((f) => f.name == file.name)) {
               _attachedFiles.add(file);
             }
@@ -94,7 +97,7 @@ class _ReportScreenState extends State<ReportScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${files.length} file(s) attached successfully.'),
+              content: Text('${result.files.length} file(s) attached successfully.'),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
             ),
@@ -172,37 +175,34 @@ class _ReportScreenState extends State<ReportScreen> {
         location: location,
         description: description,
         additionalInfo: additionalInfoController.text.trim(),
+        student: AuthService().currentUser?.displayName ?? AuthService().currentUser?.email,
         files: _attachedFiles,
       );
 
-      // Register attached files directly into the Evidence Vault
-      for (final file in _attachedFiles) {
-        final ext = file.extension?.toLowerCase() ?? '';
-        String fType = 'Document';
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {
-          fType = 'Image';
-        } else if (['mp4', 'mov', 'avi', 'mkv'].contains(ext)) {
-          fType = 'Video';
-        } else if (['mp3', 'm4a', 'wav', 'aac'].contains(ext)) {
-          fType = 'Audio';
-        }
-
-        int sizeBytes = 0;
-        try {
-          sizeBytes = await file.xFile.length();
-        } catch (_) {}
-        final sizeStr = sizeBytes > 1024 * 1024
-            ? ' MB'
-            : ' KB';
-
-        DataStore.addEvidenceFile(
-          name: file.name,
-          size: sizeStr,
+      // 1. Upload evidence files to Firebase Cloud Storage
+      List<String> storedAttachments = _attachedFiles.map((f) => f.name).toList();
+      if (_attachedFiles.isNotEmpty) {
+        final uploadedUrls = await StorageService().uploadMultipleFiles(
+          files: _attachedFiles,
           caseId: newId,
-          type: fType,
-          path: file.path ?? '',
         );
+        if (uploadedUrls.isNotEmpty) {
+          storedAttachments = uploadedUrls;
+        }
       }
+
+      // 2. Save to Cloud Firestore with storage URLs
+      await FirestoreService().submitComplaint(
+        caseId: newId,
+        type: selectedType!,
+        date: dateText,
+        location: location,
+        description: description,
+        additionalInfo: additionalInfoController.text.trim(),
+        student: AuthService().currentUser?.displayName ?? AuthService().currentUser?.email,
+        studentUid: AuthService().currentUser?.uid,
+        attachmentNames: storedAttachments,
+      );
 
       if (!mounted) return;
 
@@ -266,7 +266,7 @@ class _ReportScreenState extends State<ReportScreen> {
           decoration: BoxDecoration(
             color: AppColors.chipBackground,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.cardBorder.withValues(alpha: 0.5)),
+            border: Border.all(color: AppColors.cardBorder.withOpacity(0.5)),
           ),
           child: Column(
             children: [
@@ -332,7 +332,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
                     _label(AppText.of(context, 'harassment_type')),
                     DropdownButtonFormField<String>(
-                      initialValue: selectedType,
+                      value: selectedType,
                       decoration: InputDecoration(
                         border: const OutlineInputBorder(),
                         hintText: AppText.of(context, 'select_harassment_type'),
@@ -450,7 +450,7 @@ class _ReportScreenState extends State<ReportScreen> {
                         separatorBuilder: (context, index) => const SizedBox(height: 6),
                         itemBuilder: (context, idx) {
                           final file = _attachedFiles[idx];
-                          final size = file.lengthSync() ?? 0;
+                          final size = file.size;
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(

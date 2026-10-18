@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saathi App - Mobile QR Code</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .card {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      max-width: 420px;
+      width: 100%;
+      border: 1px solid #334155;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 24px;
+      color: #38bdf8;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .qr-container {
+      background: white;
+      padding: 16px;
+      border-radius: 16px;
+      display: inline-block;
+      margin: 20px 0;
+    }
+    .qr-container img {
+      display: block;
+      width: 240px;
+      height: 240px;
+    }
+    .link-box {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 12px;
+      word-break: break-all;
+      font-family: monospace;
+      color: #38bdf8;
+      font-size: 14px;
+      border: 1px solid #334155;
+    }
+    .instructions {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #cbd5e1;
+      text-align: left;
+    }
+    .instructions li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📱 Saathi Mobile App</h1>
+    <p>Apne mobile ka camera is QR code par rakhein taake direct link open ho jaye:</p>
+    
+    <div class="qr-container">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://663850c22efe0c.lhr.life" alt="QR Code">
+    </div>
+
+    <div class="link-box">
+      https://663850c22efe0c.lhr.life
+    </div>
+
+    <ul class="instructions">
+      <li>📷 <b>Step 1:</b> Mobile ka Camera ya Google Lens kholein.</li>
+      <li>✨ <b>Step 2:</b> Screen par is QR Code ki taraf point karein.</li>
+      <li>🚀 <b>Step 3:</b> Aane wale link par tap karein — Saathi App mobile par chal jayegi!</li>
+    </ul>
+  </div>
+</body>
+</html>

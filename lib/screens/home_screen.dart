@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_drawer.dart';
 import '../app_state.dart';
 import '../data_store.dart';
+import '../services/auth_service.dart';
 import 'notifications_screen.dart';
 import 'emergency_screen.dart';
 import 'report_screen.dart';
@@ -29,11 +30,11 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(radius: 16, backgroundColor: fg.withValues(alpha: 0.15), child: Icon(icon, color: fg, size: 18)),
+              CircleAvatar(radius: 16, backgroundColor: fg.withOpacity(0.15), child: Icon(icon, color: fg, size: 18)),
               const SizedBox(height: 10),
               Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: fg)),
               const SizedBox(height: 3),
-              Text(subtitle, style: TextStyle(fontSize: 11, color: fg.withValues(alpha: 0.8))),
+              Text(subtitle, style: TextStyle(fontSize: 11, color: fg.withOpacity(0.8))),
             ],
           ),
         ),
@@ -124,26 +125,26 @@ class HomeScreen extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(AppText.of(context, 'how_can_i_help'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 14),
-                  ValueListenableBuilder<Map<String, dynamic>>(
-                    valueListenable: DataStore.currentUser,
-                    builder: (context, user, _) {
-                      final name = user['name'] ?? userName;
-                      final degree = ' ()';
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                          Text(degree, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                        ],
-                      );
-                    },
-                  ),
-                ],
+              child: Builder(
+                builder: (context) {
+                  final user = AuthService().currentUser;
+                  final displayName = (user?.displayName != null && user!.displayName!.isNotEmpty)
+                      ? user.displayName!
+                      : userName;
+                  final displayEmail = (user?.email != null && user!.email!.isNotEmpty)
+                      ? user.email!
+                      : userDegree;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(AppText.of(context, 'how_can_i_help'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 14),
+                      Text(displayName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                      Text(displayEmail, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                    ],
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
@@ -295,7 +296,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 6),
-                        Text('${latest['type']} Â· ${latest['location']}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                        Text('${latest['type']} · ${latest['location']}', style: const TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(
                           latest['description']!,
@@ -355,7 +356,7 @@ class HomeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(c['name']!, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
-                              Text('${c['relation']} Â· ${c['phone']}', style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                              Text('${c['relation']} · ${c['phone']}', style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                             ],
                           ),
                         ),

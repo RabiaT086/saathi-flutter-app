@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1078804441521",
+    "project_id": "antiharassmentapp",
+    "storage_bucket": "antiharassmentapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1078804441521:android:67adc0bf98f6816517f590",
+        "android_client_info": {
+          "package_name": "com.saathi_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZBG3QkmHJwyx0EA1q0ljNoHmw-MXRgSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1078804441521:android:67adc0bf98f6816517f590",
+        "android_client_info": {
+          "package_name": "com.example.saathi_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZBG3QkmHJwyx0EA1q0ljNoHmw-MXRgSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

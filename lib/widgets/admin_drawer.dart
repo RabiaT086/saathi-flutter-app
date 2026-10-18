@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
 import '../data_store.dart';
+import '../services/auth_service.dart';
 import '../screens/login_screen.dart';
 
 /// Hamburger side drawer for the Authority / Admin Portal.
@@ -47,7 +48,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.12),
+                color: AppColors.primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.gavel_rounded, color: AppColors.primary, size: 22),
@@ -133,7 +134,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.danger.withValues(alpha: 0.15),
+                          color: AppColors.danger.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.crisis_alert_rounded, color: AppColors.danger, size: 24),
@@ -187,9 +188,9 @@ class _AdminDrawerState extends State<AdminDrawer> {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.danger.withValues(alpha: 0.06),
+                          color: AppColors.danger.withOpacity(0.06),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+                          border: Border.all(color: AppColors.danger.withOpacity(0.3)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -317,7 +318,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
+                          color: Colors.white.withOpacity(0.18),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 28),
@@ -360,7 +361,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                 children: [
                   CircleAvatar(
                     radius: 22,
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                    backgroundColor: AppColors.primary.withOpacity(0.15),
                     child: const Icon(Icons.account_balance_rounded, color: AppColors.primary, size: 22),
                   ),
                   const SizedBox(width: 12),
@@ -584,7 +585,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                         SwitchListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14),
                           value: emergencySirenSound,
-                          activeThumbColor: AppColors.primary,
+                          activeColor: AppColors.primary,
                           onChanged: (v) => setState(() => emergencySirenSound = v),
                           title: Text(
                             AppText.of(context, 'sound_alerts'),
@@ -599,7 +600,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                         SwitchListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14),
                           value: newComplaintPush,
-                          activeThumbColor: AppColors.primary,
+                          activeColor: AppColors.primary,
                           onChanged: (v) => setState(() => newComplaintPush = v),
                           title: Text(
                             isUrdu ? 'نئی شکایت کا پش نوٹیفیکیشن' : 'New Complaint Alerts',
@@ -621,7 +622,9 @@ class _AdminDrawerState extends State<AdminDrawer> {
                     width: double.infinity,
                     height: 48,
                     child: OutlinedButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
+                        await AuthService().signOut();
+                        if (!context.mounted) return;
                         Navigator.pop(context);
                         Navigator.pushReplacement(
                           context,

@@ -241,7 +241,7 @@ class AdminCaseCard extends StatelessWidget {
         border: Border.all(color: AppColors.cardBorder, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: AppColors.isDark ? 0.3 : 0.03),
+            color: Colors.black.withOpacity(AppColors.isDark ? 0.3 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -265,7 +265,7 @@ class AdminCaseCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: priColor.withValues(alpha: 0.12),
+                  color: priColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -281,7 +281,7 @@ class AdminCaseCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statColor.withValues(alpha: 0.15),
+                  color: statColor.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

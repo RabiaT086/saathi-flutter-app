@@ -179,16 +179,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                 decoration: BoxDecoration(
                   color: AppColors.chipBackground,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
-                child: Icon(
-                  Icons.arrow_back_rounded,
-                  size: 20,
-                  color: AppColors.primaryDark,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.arrow_back_rounded,
+                      size: 20,
+                      color: AppColors.primaryDark,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      AppText.of(context, 'back'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             )
@@ -314,7 +328,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ? const Color(0xFF131D2E)
                       : const Color(0xFFF0F7FF),
                   valueColor: const Color(0xFF1D4ED8),
-                  glowColor: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                  glowColor: const Color(0xFF2563EB).withOpacity(0.12),
                   onTap: () {
                     setState(() {
                       _currentTabIndex = 1;
@@ -338,7 +352,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ? const Color(0xFF11261B)
                       : const Color(0xFFF0FDF4),
                   valueColor: const Color(0xFF15803D),
-                  glowColor: const Color(0xFF16A34A).withValues(alpha: 0.12),
+                  glowColor: const Color(0xFF16A34A).withOpacity(0.12),
                   onTap: () {
                     setState(() {
                       _currentTabIndex = 1;
@@ -366,7 +380,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ? const Color(0xFF2C190A)
                       : const Color(0xFFFFF7ED),
                   valueColor: const Color(0xFFC2410C),
-                  glowColor: const Color(0xFFF59E0B).withValues(alpha: 0.28),
+                  glowColor: const Color(0xFFF59E0B).withOpacity(0.28),
                   badgeText: isUrdu ? 'اہم' : 'HIGH',
                   onTap: () {
                     setState(() {
@@ -391,7 +405,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ? const Color(0xFF2F1012)
                       : const Color(0xFFFEF2F2),
                   valueColor: const Color(0xFFDC2626),
-                  glowColor: const Color(0xFFDC2626).withValues(alpha: 0.32),
+                  glowColor: const Color(0xFFDC2626).withOpacity(0.32),
                   badgeText: isUrdu ? 'ایمرجنسی' : 'SOS',
                   onTap: () {
                     setState(() {
@@ -518,7 +532,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         border: Border.all(color: AppColors.cardBorder, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: AppColors.isDark ? 0.3 : 0.03),
+            color: Colors.black.withOpacity(AppColors.isDark ? 0.3 : 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -625,7 +639,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         border: Border.all(color: AppColors.cardBorder, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: AppColors.isDark ? 0.3 : 0.03),
+            color: Colors.black.withOpacity(AppColors.isDark ? 0.3 : 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -892,9 +906,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+                      color: const Color(0xFF16A34A).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFF16A34A).withValues(alpha: 0.3)),
+                      border: Border.all(color: const Color(0xFF16A34A).withOpacity(0.3)),
                     ),
                     child: Row(
                       children: [
@@ -945,7 +959,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         border: Border.all(color: const Color(0xFFDC2626), width: 1.8),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+            color: const Color(0xFFDC2626).withOpacity(0.15),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -959,7 +973,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+                  color: const Color(0xFFDC2626).withOpacity(0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.crisis_alert_rounded, color: Color(0xFFDC2626), size: 22),
@@ -1077,7 +1091,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.inbox_rounded, size: 36, color: AppColors.textMuted.withValues(alpha: 0.6)),
+              Icon(Icons.inbox_rounded, size: 36, color: AppColors.textMuted.withOpacity(0.6)),
               const SizedBox(height: 12),
               Text(
                 AppText.of(context, 'no_complaints_match'),

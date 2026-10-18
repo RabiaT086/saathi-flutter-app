@@ -56,7 +56,7 @@ class AdminStatCard extends StatelessWidget {
                 )
               else
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: AppColors.isDark ? 0.3 : 0.04),
+                  color: Colors.black.withOpacity(AppColors.isDark ? 0.3 : 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -71,7 +71,7 @@ class AdminStatCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: effectiveIconColor.withValues(alpha: 0.15),
+                      color: effectiveIconColor.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(icon, color: effectiveIconColor, size: 22),
@@ -80,9 +80,9 @@ class AdminStatCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: effectiveIconColor.withValues(alpha: 0.15),
+                        color: effectiveIconColor.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: effectiveIconColor.withValues(alpha: 0.5), width: 1),
+                        border: Border.all(color: effectiveIconColor.withOpacity(0.5), width: 1),
                       ),
                       child: Text(
                         badgeText!,

@@ -1,9 +1,9 @@
-﻿import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../data_store.dart';
+import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
+import '../services/supabase_service.dart';
 import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -26,134 +26,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
-  final bool _isLoading = false;
+  bool _isLoading = false;
 
-  final emailRegex =
-      RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
-
-  void createAccount() async {
-    final name = nameController.text.trim();
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
-    final confirmPassword = confirmPasswordController.text.trim();
-    final universityId = universityIdController.text.trim();
-    final emergencyName = emergencyNameController.text.trim();
-    final emergencyNumber = emergencyNumberController.text.trim();
-
-    // Validation checks
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your full name.'),
-        ),
-      );
-      return;
-    }
-
-    if (email.isEmpty || !emailRegex.hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid email address.'),
-        ),
-      );
-      return;
-    }
-
-    if (password.isEmpty || password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Password must be at least 6 characters long.'),
-        ),
-      );
-      return;
-    }
-
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match.'),
-        ),
-      );
-      return;
-    }
-
-    if (universityId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Please enter your student / university ID.'),
-        ),
-      );
-      return;
-    }
-
-    try {
-      DataStore.updateProfile(
-        name: name,
-        email: email,
-        universityId: universityId,
-      );
-
-      if (emergencyName.isNotEmpty &&
-          emergencyNumber.isNotEmpty) {
-        DataStore.addEmergencyContact(
-          name: emergencyName,
-          relation: 'Guardian / Contact',
-          phone: emergencyNumber,
-        );
-      }
-
-      await Supabase.instance.client.auth.signUp(
-        email: email,
-        password: password,
-        data: {
-          'full_name': name,
-          'university_id': universityId,
-        },
-      );
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Account created! Please check your email to confirm.',
-          ),
-        ),
-      );
-
-      Future.delayed(
-        const Duration(milliseconds: 1200),
-        () {
-          if (!mounted) return;
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const LoginScreen(),
-            ),
-          );
-        },
-      );
-    } on AuthException catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Something went wrong: $e'),
-        ),
-      );
-    }
-  }
+  final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
+  final phoneRegex = RegExp(r'^(?:\+92|0092|0)?3[0-9]{9}$');
 
   @override
   void dispose() {
@@ -167,18 +43,125 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  Widget _label(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          color: AppColors.primaryDark,
+  Future<void> createAccount() async {
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+    final universityId = universityIdController.text.trim();
+    final emergencyNumber = emergencyNumberController.text.trim();
+
+    // Validation checks
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your full name.')),
+      );
+      return;
+    }
+
+    if (email.isEmpty || !emailRegex.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address.')),
+      );
+      return;
+    }
+
+    if (password.isEmpty || password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters long.')),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match.')),
+      );
+      return;
+    }
+
+    if (universityId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your student / university ID.')),
+      );
+      return;
+    }
+
+    if (emergencyNumber.isNotEmpty && !phoneRegex.hasMatch(emergencyNumber.replaceAll(RegExp(r'\s+|-'), ''))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid emergency phone number (e.g., 03001234567).')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final credential = await AuthService().signUpWithEmailAndPassword(
+        email: email,
+        password: password,
+        displayName: name,
+      );
+
+      final user = credential.user;
+      if (user != null) {
+        // Save user profile in Cloud Firestore
+        await FirestoreService().saveUserProfile(
+          uid: user.uid,
+          fullName: name,
+          email: email,
+          universityId: universityId,
+          emergencyName: emergencyNameController.text.trim(),
+          emergencyPhone: emergencyNumber,
+        );
+
+        // Background sync to Supabase (if configured)
+        SupabaseService.signUpStudent(
+          email: email,
+          password: password,
+          fullName: name,
+          universityId: universityId,
+          emergencyName: emergencyNameController.text.trim(),
+          emergencyPhone: emergencyNumber,
+        ).ignore();
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created successfully! Please log in.'),
+          backgroundColor: Colors.green,
         ),
-      ),
-    );
+      );
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      });
+    } catch (e) {
+      if (mounted) {
+        final message = AuthService.getFriendlyErrorMessage(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
+
+  Widget _label(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -190,13 +173,7 @@ class _SignupScreenState extends State<SignupScreen> {
           appBar: AppBar(
             backgroundColor: AppColors.background,
             elevation: 0,
-            title: Text(
-              AppText.of(context, 'join_saathi'),
-              style: const TextStyle(
-                color: AppColors.primaryDark,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            title: Text(AppText.of(context, 'join_saathi'), style: const TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.bold)),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -207,184 +184,105 @@ class _SignupScreenState extends State<SignupScreen> {
                 children: [
                   Text(
                     AppText.of(context, 'signup_subtitle'),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
                   ),
-
                   const SizedBox(height: 25),
 
-                  _label(
-                    AppText.of(context, 'full_name'),
-                  ),
-
+                  _label(AppText.of(context, 'full_name')),
                   TextField(
                     controller: nameController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Areesha Naz',
-                    ),
+                    decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Areesha Naz'),
                   ),
-
                   const SizedBox(height: 18),
 
-                  _label(
-                    AppText.of(context, 'university_email'),
-                  ),
-
+                  _label(AppText.of(context, 'university_email')),
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      hintText: 'name@fuuast.edu.pk',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: const InputDecoration(hintText: 'name@fuuast.edu.pk', border: OutlineInputBorder()),
                   ),
-
                   const SizedBox(height: 18),
 
-                  _label(
-                    AppText.of(context, 'password'),
-                  ),
-
+                  _label(AppText.of(context, 'password')),
                   TextField(
                     controller: passwordController,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
-                      hintText:
-                          AppText.of(context, 'at_least_6_chars'),
+                      hintText: AppText.of(context, 'at_least_6_chars'),
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
-                            obscurePassword =
-                                !obscurePassword;
+                            obscurePassword = !obscurePassword;
                           });
                         },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
+                        icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 18),
 
-                  _label(
-                    AppText.of(context, 'confirm_password'),
-                  ),
-
+                  _label(AppText.of(context, 'confirm_password')),
                   TextField(
                     controller: confirmPasswordController,
                     obscureText: obscureConfirmPassword,
                     decoration: InputDecoration(
-                      hintText:
-                          AppText.of(context, 'reenter_password'),
+                      hintText: AppText.of(context, 'reenter_password'),
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
-                            obscureConfirmPassword =
-                                !obscureConfirmPassword;
+                            obscureConfirmPassword = !obscureConfirmPassword;
                           });
                         },
-                        icon: Icon(
-                          obscureConfirmPassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
+                        icon: Icon(obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 18),
 
-                  _label(
-                    AppText.of(context, 'student_university_id'),
-                  ),
-
+                  _label(AppText.of(context, 'student_university_id')),
                   TextField(
                     controller: universityIdController,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. FUU-CS-2022-114',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: const InputDecoration(hintText: 'e.g. FUU-CS-2022-114', border: OutlineInputBorder()),
                   ),
-
                   const SizedBox(height: 18),
 
-                  _label(
-                    AppText.of(context, 'emergency_contact_name'),
-                  ),
-
+                  _label(AppText.of(context, 'emergency_contact_name')),
                   TextField(
                     controller: emergencyNameController,
-                    decoration: InputDecoration(
-                      hintText:
-                          AppText.of(context, 'relation_hint'),
-                      border: const OutlineInputBorder(),
-                    ),
+                    decoration: InputDecoration(hintText: AppText.of(context, 'relation_hint'), border: const OutlineInputBorder()),
                   ),
-
                   const SizedBox(height: 18),
 
-                  _label(
-                    AppText.of(context, 'emergency_contact_number'),
-                  ),
-
+                  _label(AppText.of(context, 'emergency_contact_number')),
                   TextField(
                     controller: emergencyNumberController,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      hintText: '0300 1234567',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: const InputDecoration(hintText: '0300 1234567', border: OutlineInputBorder()),
                   ),
-
                   const SizedBox(height: 30),
 
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed:
-                          _isLoading ? null : createAccount,
+                      onPressed: _isLoading ? null : createAccount,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(16),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                       child: _isLoading
                           ? const SizedBox(
                               width: 24,
                               height: 24,
-                              child:
-                                  CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                             )
-                          : Text(
-                              AppText.of(
-                                context,
-                                'create_account',
-                              ),
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                          : Text(AppText.of(context, 'create_account'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
                   Center(
                     child: TextButton(
                       onPressed: () {
@@ -392,26 +290,12 @@ class _SignupScreenState extends State<SignupScreen> {
                       },
                       child: RichText(
                         text: TextSpan(
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
                           children: [
+                            TextSpan(text: AppText.of(context, 'already_registered')),
                             TextSpan(
-                              text: AppText.of(
-                                context,
-                                'already_registered',
-                              ),
-                            ),
-                            TextSpan(
-                              text: AppText.of(
-                                context,
-                                'login',
-                              ),
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              text: AppText.of(context, 'login'),
+                              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
                             ),
                           ],
                         ),

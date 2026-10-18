@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
-import '../screens/info_page_screen.dart' show privacyPolicyContent, helpFaqsContent, aboutUsContent;
+import '../services/auth_service.dart';
+import '../screens/info_page_screen.dart';
+import '../screens/welcome_screen.dart';
 
 /// Real sliding sidebar (Flutter's Drawer already closes on outside tap
 /// and supports swipe-to-close). Holds Language, Theme, Notification
@@ -50,37 +52,10 @@ class _AppDrawerState extends State<AppDrawer> {
       leading: Icon(icon, color: AppColors.primary),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
       trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
-      onTap: () => _showInfoDialog(context, title, content),
-    );
-  }
-
-  // Matches the Admin Drawer's popup pattern (e.g. HEC Guidelines dialog):
-  // close the drawer, then show the content as an AlertDialog instead of
-  // navigating to a new screen.
-  void _showInfoDialog(BuildContext context, String title, String content) {
-    Navigator.pop(context); // close drawer
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark),
-        ),
-        content: SingleChildScrollView(
-          child: Text(
-            content,
-            style: const TextStyle(fontSize: 13.5, color: AppColors.textSecondary, height: 1.5),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => InfoPageScreen(title: title, content: content)));
+      },
     );
   }
 
@@ -226,7 +201,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           value: pushNotifications,
-                          activeThumbColor: AppColors.primary,
+                          activeColor: AppColors.primary,
                           onChanged: (v) => setState(() => pushNotifications = v),
                           title: Text(AppText.of(context, 'push_notifications'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
                           subtitle: Text(AppText.of(context, 'push_notifications_desc'), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
@@ -235,7 +210,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           value: caseUpdateEmails,
-                          activeThumbColor: AppColors.primary,
+                          activeColor: AppColors.primary,
                           onChanged: (v) => setState(() => caseUpdateEmails = v),
                           title: Text(AppText.of(context, 'case_update_emails'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
                           subtitle: Text(AppText.of(context, 'case_update_emails_desc'), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
@@ -271,6 +246,32 @@ class _AppDrawerState extends State<AppDrawer> {
                         const Divider(height: 1, color: AppColors.cardBorder),
                         _linkRow(Icons.info_outline, AppText.of(context, 'about_us'), aboutUsContent),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        await AuthService().signOut();
+                        if (!context.mounted) return;
+                        Navigator.pop(context);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                          (route) => false,
+                        );
+                      },
+                      icon: const Icon(Icons.logout_rounded, color: AppColors.danger),
+                      label: Text(
+                        AppText.of(context, 'logout'),
+                        style: const TextStyle(color: AppColors.danger, fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.danger),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

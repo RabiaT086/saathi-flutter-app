@@ -1,8 +1,7 @@
-﻿import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import '../services/auth_service.dart';
 import 'forgot_password_screen.dart';
 import 'signup_screen.dart';
 import 'main_shell.dart';
@@ -20,22 +19,39 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
 
   bool obscurePassword = true;
+  bool _isLoading = false;
+
+  final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}$');
 
   Future<void> login() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter email and password.'),
-        ),
+        const SnackBar(content: Text('Please enter your email address.')),
       );
       return;
     }
 
+    if (!emailRegex.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address.')),
+      );
+      return;
+    }
+
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your password.')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
     try {
-      await Supabase.instance.client.auth.signInWithPassword(
+      await AuthService().signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -44,35 +60,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => const MainShell(),
-        ),
-      );
-    } on AuthException catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-        ),
+        MaterialPageRoute(builder: (context) => const MainShell()),
       );
     } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Something went wrong: $e'),
-        ),
-      );
+      if (mounted) {
+        final message = AuthService.getFriendlyErrorMessage(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   void loginAsAdmin() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AdminLoginScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
     );
   }
 
@@ -85,9 +95,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: AppState.isUrdu,
-      builder: (context, value, child) {
+    return AnimatedBuilder(
+      animation: AppState.listenable,
+      builder: (context, _) {
         return Scaffold(
           backgroundColor: AppColors.background,
           body: SafeArea(
@@ -97,8 +107,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 30),
-
-                  // App Icon
                   Container(
                     width: 64,
                     height: 64,
@@ -106,16 +114,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.verified_user_outlined,
-                      color: Colors.white,
-                      size: 30,
-                    ),
+                    child: const Icon(Icons.verified_user_outlined, color: Colors.white, size: 30),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Welcome
                   Text(
                     AppText.of(context, 'welcome_back'),
                     style: const TextStyle(
@@ -124,59 +125,34 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: AppColors.primaryDark,
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
                   Text(
                     AppText.of(context, 'sign_in_subtitle'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: const TextStyle(fontSize: 15, color: AppColors.textSecondary),
                   ),
-
                   const SizedBox(height: 30),
 
-                  // University Email
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      AppText.of(context, 'university_email'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primaryDark,
-                      ),
-                    ),
+                    child: Text(AppText.of(context, 'university_email'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
                   ),
-
                   const SizedBox(height: 8),
-
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
-                      hintText: 'you@university.edu.pk',
+                      hintText: 'name@example.com',
                       border: OutlineInputBorder(),
                     ),
                   ),
-
                   const SizedBox(height: 18),
 
-                  // Password
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      AppText.of(context, 'password'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primaryDark,
-                      ),
-                    ),
+                    child: Text(AppText.of(context, 'password'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
                   ),
-
                   const SizedBox(height: 8),
-
                   TextField(
                     controller: passwordController,
                     obscureText: obscurePassword,
@@ -189,92 +165,66 @@ class _LoginScreenState extends State<LoginScreen> {
                           });
                         },
                         icon: Icon(
-                          obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                          obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                         ),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
-                  // Forgot Password
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const ForgotPasswordScreen(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
                         );
                       },
                       child: Text(
                         AppText.of(context, 'forgot_password'),
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
 
-                  // Login Button
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: login,
+                      onPressed: _isLoading ? null : login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: Text(
-                        AppText.of(context, 'login'),
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                            )
+                          : Text(AppText.of(context, 'login'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Create Account
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignupScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => const SignupScreen()),
                       );
                     },
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
                         children: [
-                          TextSpan(
-                            text: AppText.of(context, 'no_account'),
-                          ),
+                          TextSpan(text: AppText.of(context, 'no_account')),
                           TextSpan(
                             text: AppText.of(context, 'create_account'),
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -282,30 +232,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   const SizedBox(height: 20),
-
-                  const Divider(
-                    color: AppColors.cardBorder,
-                  ),
-
+                  const Divider(color: AppColors.cardBorder),
                   const SizedBox(height: 10),
-
-                  Text(
-                    AppText.of(context, 'authorised_authority'),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-
-                  // Admin Login
+                  Text(AppText.of(context, 'authorised_authority'), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                   TextButton(
                     onPressed: loginAsAdmin,
                     child: Text(
                       AppText.of(context, 'admin_login'),
-                      style: const TextStyle(
-                        color: AppColors.primaryDark,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],

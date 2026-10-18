@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import '../services/auth_service.dart';
 import 'forgot_password_screen.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -18,8 +19,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool obscureCurrent = true;
   bool obscureNew = true;
   bool obscureConfirm = true;
+  bool _isLoading = false;
 
-  void updatePassword() {
+  Future<void> updatePassword() async {
     final current = currentPasswordController.text.trim();
     final newPass = newPasswordController.text.trim();
     final confirm = confirmPasswordController.text.trim();
@@ -45,10 +47,38 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Password updated successfully.')),
-    );
-    Navigator.pop(context);
+    setState(() => _isLoading = true);
+
+    try {
+      await AuthService().updatePassword(
+        currentPassword: current,
+        newPassword: newPass,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password updated successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        final message = AuthService.getFriendlyErrorMessage(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -116,13 +146,22 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                onPressed: updatePassword,
+                onPressed: _isLoading ? null : updatePassword,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                child: Text(AppText.of(context, 'update_password'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Text(AppText.of(context, 'update_password'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
               ),
             ),
           ],

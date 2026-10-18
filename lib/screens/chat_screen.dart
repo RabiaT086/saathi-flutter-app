@@ -1,6 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../widgets/app_drawer.dart';
 import '../app_state.dart';
 import 'report_screen.dart';
 import 'emergency_screen.dart';
@@ -131,7 +130,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
         return Scaffold(
           backgroundColor: AppColors.background,
-          drawer: const AppDrawer(),
           body: SafeArea(
             child: Column(
               children: [
@@ -150,12 +148,15 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     child: Row(
                       children: [
-                        Builder(
-                          builder: (scaffoldContext) => IconButton(
-                            onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
-                            icon: const Icon(Icons.menu, color: Colors.white),
-                            tooltip: 'Menu',
-                          ),
+                        IconButton(
+                          onPressed: () {
+                            if (widget.onBackToHome != null) {
+                              widget.onBackToHome!();
+                            } else if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
                         ),
                         const SizedBox(width: 4),
                         Column(
@@ -306,7 +307,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             label: Text(text, style: const TextStyle(fontSize: 12, color: AppColors.primaryDark)),
                             backgroundColor: AppColors.chipBackground,
                             onPressed: () => sendMessage(text),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: AppColors.cardBorder.withValues(alpha: 0.5))),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: AppColors.cardBorder.withOpacity(0.5))),
                           ),
                         );
                       }).toList(),

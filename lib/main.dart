@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'app_state.dart';
 import 'theme/app_colors.dart';
-import 'screens/welcome_screen.dart';
+import 'screens/auth_gate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'data_store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(
-    url: 'https://cvpfdgyccgponvyastub.supabase.co',
-    publishableKey:  'sb_publishable_xebqc_1uYKC4_BBmedIqtg_AK_DA6eM',
-  );
-  DataStore.loadFromSupabase();
+
+  // Initialize Firebase using current platform options
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Firebase initialization note: $e');
+  }
+
+  // Maintain existing Supabase initialization for complaints and storage
+  try {
+    await Supabase.initialize(
+      url: 'https://cvpfdgyccgponvyastub.supabase.co',
+      publishableKey:  'sb_publishable_xebqc_1uYKC4_BBmedIqtg_AK_DA6eM',
+    );
+  } catch (e) {
+    debugPrint('Supabase initialization note: $e');
+  }
+
   runApp(const SaathiApp());
 }
 class SaathiApp extends StatelessWidget {
@@ -60,7 +76,7 @@ class SaathiApp extends StatelessWidget {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
-          home: const WelcomeScreen(),
+          home: const AuthGate(),
         );
       },
     );
